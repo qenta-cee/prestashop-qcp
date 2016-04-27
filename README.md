@@ -1,6 +1,6 @@
 # Wirecard Checkout Page plugin for PrestaShop
 
-[![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/wirecard/PrestaShop-WCP/master/LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/wirecard/prestashop-wcp/master/LICENSE)
 [![PrestaShop](https://img.shields.io/badge/PrestaShop-v1.5.6.2-green.svg)](https://www.prestashop.com/)
 [![PrestaShop](https://img.shields.io/badge/PrestaShop-v1.6.1.2-green.svg)](https://www.prestashop.com/)
 [![PHP v5.3](https://img.shields.io/badge/php-v5.3-yellow.svg)](http://www.php.net)
