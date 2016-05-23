@@ -122,7 +122,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '1.4.0';
+        $this->version = '1.4.1';
         $this->author = 'Wirecard CEE';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentExecution', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -692,6 +692,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setPendingUrl($this->getReturnUrl())
             ->setDisplayText($this->getDisplayText())
             ->setCustomerStatement($this->getCustomerStatement())
+            ->setOrderReference($this->getOrderReference())
             ->setDuplicateRequestCheck($this->getDuplicateRequestCheck())
             ->setImageUrl($this->getImageUrl())
             ->setMaxRetries($this->getMaxRetries())
@@ -1278,6 +1279,12 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         $orderDescription = 'CID: ' . $this->getOrder()->id_customer . ' OID: ' . $this->getOrder()->id;
         return $orderDescription;
+    }
+
+    private function getOrderReference()
+    {
+        $orderReference = str_pad($this->getOrder()->id, 10, '0', STR_PAD_LEFT);
+        return $orderReference;
     }
 
     private function getConsumerIpAddress()
