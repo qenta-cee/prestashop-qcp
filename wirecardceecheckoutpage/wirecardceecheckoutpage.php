@@ -122,8 +122,8 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '1.4.1';
-        $this->author = 'Wirecard CEE';
+        $this->version = '1.5.0';
+        $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentExecution', 'paymentIFrame');
         $this->is_eu_compatible = 1;
 
@@ -652,6 +652,8 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         require('Wirecard/CEE/QPay/Initiation.php');
 
+        $customer = new Customer($this->getOrder()->id_customer);
+
         $this->validateOrder(
             $this->getCart()->id,
             $this->getAwaitingState(),
@@ -698,6 +700,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setMaxRetries($this->getMaxRetries())
             ->setAutoDeposit($this->getAutoDeposit())
             ->setWindowName($this->getWindowName())
+            ->createConsumerMerchantCrmId($customer->email)
             ->setPluginVersion(
                 $pluginVersion['shopName'],
                 $pluginVersion['shopVersion'],

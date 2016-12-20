@@ -66,6 +66,7 @@ final class Wirecard_CEE_QPay_Initiation
     private static $REQUEST_FINGERPRINT = 'requestFingerprint';
     private static $REQUEST_FINGERPRINT_ORDER = 'requestFingerprintOrder';
     private static $PLUGIN_VERSION = 'pluginVersion';
+    private static $CONSUMER_MERCHANT_CRM_ID = 'consumerMerchantCrmId';
     
     /**
      * creates an instance of {@link Wirecard_CEE_QPay_Initiation}
@@ -89,7 +90,7 @@ final class Wirecard_CEE_QPay_Initiation
                                 $currency, $paymentType, $language, 
                                 $orderDescription, $successUrl, $cancelUrl, 
                                 $failureUrl, $serviceUrl, $consumerUserAgent,
-                                $consumerIpAddress)
+                                $consumerIpAddress, $consumerMerchantCrmId)
     {
         $this->_secret = $secret;
         $this->_fingerprintOrder[] = self::$SECRET;
@@ -105,6 +106,7 @@ final class Wirecard_CEE_QPay_Initiation
         $this->__set(self::$SERVICE_URL, $serviceUrl);
         $this->__set(self::$CONSUMER_USER_AGENT, $consumerUserAgent);
         $this->__set(self::$CONSUMER_IP_ADDRESS, $consumerIpAddress);
+        $this->__set(self::$CONSUMER_MERCHANT_CRM_ID, $consumerMerchantCrmId);
         return $this;
     }
 
@@ -300,6 +302,17 @@ final class Wirecard_CEE_QPay_Initiation
         }
         $version = base64_encode(strval($shopName) . ';' . strval($shopVersion) . ';' . $libraryString . ';' . strval($pluginName) . ';' . strval($pluginVersion));
         $this->__set(self::$PLUGIN_VERSION, $version);
+        return $this;
+    }
+
+    /**
+     * setter for the consumer merchant crm id
+     * @param $userEmail
+     * @return $this
+     */
+    public function createConsumerMerchantCrmId($userEmail)
+    {
+        $this->__set(self::$CONSUMER_MERCHANT_CRM_ID, md5($userEmail));
         return $this;
     }
 
