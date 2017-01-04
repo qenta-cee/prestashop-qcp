@@ -30,6 +30,8 @@
  * Please do not use the plugin if you do not agree to these terms of use!
  */
 
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -108,6 +110,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     private $myOrder;
     private $myCart;
     private $postErrors = array();
+    private $config = array();
     
     public function log($text)
     {
@@ -120,9 +123,10 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     public function __construct()
     {
+        $this->config = $this->config();
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '1.5.0';
+        $this->version = '2.0.0';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentExecution', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -141,9 +145,9 @@ class WirecardCEECheckoutPage extends PaymentModule
     public function install()
     {
         if (!parent::install()
-            || !$this->registerHook('payment')
-            || !$this->registerHook('displayPaymentEU')
+            || !$this->registerHook('paymentOptions')
             || !$this->registerHook('paymentReturn')
+            || !$this->registerHook('actionFrontControllerSetMedia')
             || !Configuration::updateValue(self::WCP_CONFIGURATION_MODE, self::WCP_CONFIGURATION_MODE_DEFAULT)
             || !Configuration::updateValue(self::WCP_CUSTOMER_ID, self::WCP_CUSTOMER_ID_DEMO)
             || !Configuration::updateValue(self::WCP_SHOP_ID, self::WCP_SHOP_ID_DEMO)
@@ -193,6 +197,21 @@ class WirecardCEECheckoutPage extends PaymentModule
             Configuration::updateValue(self::WCP_OS_AWAITING, (int)($orderState->id));
         }
         return true;
+    }
+
+    public function hookActionFrontControllerSetMedia($params){
+
+        $controllerArray = array('order');
+        if (in_array($this->context->controller->php_self, $controllerArray)) {
+            $this->context->controller->registerStylesheet(
+                'module-' . $this->name . '-style',
+                'modules/' . $this->name . '/css/style.css',
+                [
+                    'media' => 'all',
+                    'priority' => 200,
+                ]
+            );
+        }
     }
 
     private function installPaymentTypes()
@@ -274,12 +293,9 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $this->html;
     }
 
-    private function renderForm()
+    private function config()
     {
-        $radio_type = 'radio';
-        if ($this->getMinorPrestaVersion() > 5) {
-            $radio_type = 'switch';
-        }
+        $radio_type = 'onoff';
         $radio_options = array(
             array(
                 'id' => 'active_on',
@@ -294,21 +310,15 @@ class WirecardCEECheckoutPage extends PaymentModule
         );
 
         $fields_form_settings = array(
-            'form' => array(
-                'legend' => array(
-                    'title' => $this->l('Settings'),
-                    'icon' => 'icon-cogs'
-                ),
-                'input' => array(
+            'settings' => array(
+                'tab' => $this->l('Settings'),
+                'fields' => array(
                     array(
                         'type' => 'select',
                         'label' => $this->l('Configuration'),
+                        'default' => 'production',
                         'name' => self::WCP_CONFIGURATION_MODE,
-                        'options' => array(
-                            'query' => $this->getConfigurationModes(),
-                            'id' => 'key',
-                            'name' => 'value'
-                        )
+                        'options' => 'getConfigurationModes'
                     ),
                     array(
                         'type' => 'text',
@@ -316,6 +326,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'name' => self::WCP_CUSTOMER_ID,
                         'required' => true,
                         'class' => 'fixed-width-xl',
+                        'maxchar' => 7,
                         'desc' => $this->l('Customer number you received from Wirecard (customerId, i.e. D2#####).').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#customerid">'.$this->l('More information').' <i class="icon-external-link"></i></a>',
                     ),
                     array(
@@ -323,6 +334,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'label' => $this->l('Shop ID'),
                         'name' => self::WCP_SHOP_ID,
                         'class' => 'fixed-width-xl',
+                        'maxchar' => 16,
                         'desc' => $this->l('Shop identifier in case of more than one shop.').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#shopid">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
@@ -414,9 +426,6 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'class' => 't',
                         'values' => $radio_options
                     )
-                ),
-                'submit' => array(
-                    'title' => $this->l('Save')
                 )
             ),
         );
@@ -435,36 +444,175 @@ class WirecardCEECheckoutPage extends PaymentModule
         }
 
         $fields_form_payment = array(
+            'paymentmethods' => array(
+                'tab' => $this->l('Payment methods'),
+                'fields' => $paymentTypeSwitches
+            ),
+        );
+
+        $settings = array_merge($fields_form_settings,$fields_form_payment);
+
+        return $settings;
+    }
+
+    private function renderForm()
+    {
+        $radio_type = 'switch';
+
+        $radio_options = array(
+            array(
+                'id' => 'active_on',
+                'value' => 1,
+                'label' => $this->l('Enabled')
+            ),
+            array(
+                'id' => 'active_off',
+                'value' => 0,
+                'label' => $this->l('Disabled')
+            )
+        );
+
+        $input_fields = array();
+        $tabs = array();
+        foreach ($this->config as $groupKey => $group) {
+            $tabs[$groupKey] = $this->l($group['tab']);
+            foreach ($group['fields'] as $f) {
+                $configGroup = isset($f['group']) ? $f['group'] : $groupKey;
+                if (isset($f['class'])) {
+                    $configGroup = 'pt';
+                }
+
+                $elem = array(
+                    'name' => $f['name'],
+                    'label' => $this->l($f['label']),
+                    'tab' => $groupKey,
+                    'type' => $f['type'],
+                    'required' => isset($f['required']) && $f['required']
+                );
+
+                if (isset($f['cssclass'])) {
+                    $elem['class'] = $f['cssclass'];
+                }
+
+                if (isset($f['doc'])) {
+                    if (is_array($f['doc'])) {
+                        $elem['desc'] = '';
+                        foreach ($f['doc'] as $d) {
+                            if (Tools::strlen($elem['desc'])) {
+                                $elem['desc'] .= '<br/>';
+                            }
+
+                            $elem['desc'] .= $d;
+                        }
+                    } else {
+                        $elem['desc'] = $this->l($f['doc']);
+                    }
+                }
+
+                if (isset($f['docref'])) {
+                    $elem['desc'] = isset($elem['desc']) ? $elem['desc'] . ' ' : '';
+                    $elem['desc'] .= sprintf(
+                        '<a target="_blank" href="%s">%s <i class="icon-external-link"></i></a>',
+                        $f['docref'],
+                        $this->l('More information')
+                    );
+                }
+
+                switch ($f['type']) {
+                    case 'text':
+                        if (!isset($elem['class'])) {
+                            $elem['class'] = 'fixed-width-xl';
+                        }
+
+                        if (isset($f['maxchar'])) {
+                            $elem['maxlength'] = $elem['maxchar'] = $f['maxchar'];
+                        }
+                        break;
+
+                    case 'onoff':
+                        $elem['type'] = $radio_type;
+                        $elem['class'] = 't';
+                        $elem['is_bool'] = true;
+                        $elem['values'] = $radio_options;
+                        break;
+
+                    case 'select':
+                        if (isset($f['multiple'])) {
+                            $elem['multiple'] = $f['multiple'];
+                        }
+
+                        if (isset($f['size'])) {
+                            $elem['size'] = $f['size'];
+                        }
+
+                        if (isset($f['options'])) {
+                            $optfunc = $f['options'];
+                            $options = array();
+                            if (is_array($optfunc)) {
+                                $options = $optfunc;
+                            }
+
+                            if (method_exists($this, $optfunc)) {
+                                $options = $this->$optfunc();
+                            }
+
+                            $elem['options'] = array(
+                                'query' => $options,
+                                'id' => 'key',
+                                'name' => 'value'
+                            );
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+
+                $input_fields[] = $elem;
+            }
+        }
+
+        $fields_form_settings = array(
             'form' => array(
+                'tabs' => $tabs,
                 'legend' => array(
-                    'title' => $this->l('Payment methods'),
-                    'icon' => 'icon-list'
+                    'title' => $this->l('Settings'),
+                    'icon' => 'icon-cogs'
                 ),
-                'input' => $paymentTypeSwitches,
+                'input' => $input_fields,
                 'submit' => array(
                     'title' => $this->l('Save')
                 )
             ),
         );
 
+
+        /** @var HelperFormCore $helper */
         $helper = new HelperForm();
         $helper->show_toolbar = false;
 
+        /** @var LanguageCore $lang */
         $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
         $helper->default_form_language = $lang->id;
-        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get(
+            'PS_BO_ALLOW_EMPLOYEE_FORM_LANG'
+        ) : 0;
         $helper->id = (int)Tools::getValue('id_carrier');
         $helper->identifier = $this->identifier;
         $helper->submit_action = 'btnSubmit';
-        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
+            . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
+
         $helper->tpl_vars = array(
             'fields_value' => $this->getConfigFieldsValues(),
             'languages' => $this->context->controller->getLanguages(),
-            'id_language' => $this->context->language->id
+            'id_language' => $this->context->language->id,
+            'ajax_configtest_url' => $this->context->link->getAdminLink('AdminModules') . '&configure=' . $this->name
+                . '&tab_module=' . $this->tab . '&module_name=' . $this->name
         );
 
-        return $helper->generateForm(array($fields_form_settings, $fields_form_payment));
+        return $helper->generateForm(array($fields_form_settings));
     }
 
     private function getTransactionIdOptions()
@@ -484,59 +632,24 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $values;
     }
 
-    public function hookPayment($params)
+    public function hookPaymentOptions($params)
     {
         if (!$this->active) {
             return;
         }
 
-        unset($this->context->cookie->qpayRedirectUrl);
-        $paymentTypes = $this->getEnabledPaymentTypes($params['cart']);
-
-        $this->smarty->assign(array(
-            'paymentTypes' => $paymentTypes,
-            'this_path' => $this->_path
-        ));
-
-        if ($this->getMinorPrestaVersion() > 5) {
-            $this->context->controller->addCSS($this->_path . 'css/style.css', 'all');
-            return $this->display(__FILE__, 'payment.tpl');
-        } else {
-            return $this->display(__FILE__, 'payment1.5.tpl');
-        }
-    }
-
-    public function hookDisplayPaymentEU($params)
-    {
-        $this->log("hookDisplayPaymentEU");
-        if (!$this->active) {
-            return;
-        }
-
-        unset($this->context->cookie->qpayRedirectUrl);
-
-        $paymentTypes = $this->getEnabledPaymentTypes($params['cart']);
         $result = array();
-        if (count($paymentTypes)) {
-            foreach ($paymentTypes as $paymentType) {
-                array_push(
-                    $result,
-                    array(
-                        'cta_text' => $this->l('Pay using') . ' ' . $paymentType['title'],
-                        'logo' => Media::getMediaPath(dirname(__FILE__) . '/img/payment_types/' . strtolower($paymentType['value']) . '.png'),
-                        'action' => $this->context->link->getModuleLink($this->name, 'payment', array('paymentType' => $paymentType['value']), true)
-                    )
-                );
-            }
-        } else {
-            array_push(
-                $result,
-                array(
-                    'cta_text' => $this->l('Pay with Wirecard Checkout Page'),
-                    'logo' => Media::getMediaPath(dirname(__FILE__) . '/img/payment_types/checkoutpage.png'),
-                    'action' => $this->context->link->getModuleLink($this->name, 'payment', array('paymentType' => 'SELECT'), true)
-                )
-            );
+
+        unset($this->context->cookie->qpayRedirectUrl);
+        $paymentTypes = $this->getEnabledPaymentTypes($params['cart']);
+
+        foreach ($paymentTypes as $paymentType) {
+            $payment = new PaymentOption();
+            $payment->setLogo(Media::getMediaPath(dirname(__FILE__) . '/img/payment_types/' . strtolower($paymentType['value']) . '.png'))
+                ->setCallToActionText($this->l('Pay using') . ' ' . $this->l($paymentType['title']))
+                ->setAction($this->context->link->getModuleLink($this->name, 'payment', array('paymentType' => $paymentType['value']), true));
+
+            $result[] = $payment;
         }
 
         return count($result) ? $result : false;
