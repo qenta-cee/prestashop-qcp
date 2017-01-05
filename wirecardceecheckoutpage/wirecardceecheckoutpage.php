@@ -393,11 +393,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'type' => 'select',
                         'label' => $this->l('Transaction ID'),
                         'name' => self::WCP_TRANSACTION_ID,
-                        'options' => array(
-                            'query' => $this->getTransactionIdOptions(),
-                            'id' => 'key',
-                            'name' => 'value'
-                        ),
+                        'options' => 'getTransactionIdOptions',
                         'desc' => $this->l('Wirecard order number: Unique number defined by Wirecard identifying the payment.') . '<br>' . $this->l('Gateway reference number: Reference number defined by the processor or acquirer.')
                     ),
                     array(
