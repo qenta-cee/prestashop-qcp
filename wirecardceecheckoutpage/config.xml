@@ -2,7 +2,7 @@
         <module>
             <name>wirecardceecheckoutpage</name>
             <displayName><![CDATA[Wirecard Checkout Page]]></displayName>
-            <version><![CDATA[1.4.1]]></version>
+            <version><![CDATA[2.0.0]]></version>
             <description><![CDATA[Wirecard Checkout Page payment module]]></description>
             <author><![CDATA[Wirecard CEE]]></author>
             <tab><![CDATA[payments_gateways]]></tab>

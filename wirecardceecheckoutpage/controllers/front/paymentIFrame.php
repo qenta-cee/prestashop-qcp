@@ -51,8 +51,7 @@ class WirecardCEECheckoutPagePaymentIFrameModuleFrontController extends ModuleFr
             'windowName' => $this->module->getWindowName()
         ));
 
+        $this->setTemplate('module:wirecardceecheckoutpage/views/templates/front/payment_iframe.tpl');
         unset($this->context->cookie->qpayRedirectUrl);
-
-        $this->setTemplate('payment_iframe.tpl');
     }
 }
