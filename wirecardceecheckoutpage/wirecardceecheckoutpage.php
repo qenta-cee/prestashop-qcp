@@ -128,7 +128,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->tab = 'payments_gateways';
         $this->version = '2.0.0';
         $this->author = 'Wirecard';
-        $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentExecution', 'paymentIFrame');
+        $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
 
         $this->currencies = true;
@@ -677,15 +677,25 @@ class WirecardCEECheckoutPage extends PaymentModule
             return $this->display(__FILE__, 'pending.tpl');
         }
 
-        $params = array(
-            'submitReorder' => true,
-            'id_order' => (int)$params['objOrder']->id
-        );
+        // rebuild cart
+        $oldCart = new Cart((int)$params["order"]->id_cart);
+        $duplication = $oldCart->duplicate();
+        if (!$duplication || !Validate::isLoadedObject($duplication['cart'])) {
+            $this->errors[] = Tools::displayError('Sorry. We cannot renew your order.');
+        } elseif (!$duplication['success']) {
+            $this->errors[] = Tools::displayError('Some items are no longer available, and we are unable to renew your order.');
+        } else {
+            $this->context->cookie->id_cart = $duplication['cart']->id;
+            $context = $this->context;
+            $context->cart = $duplication['cart'];
+            CartRule::autoAddToCart($context);
+            $this->context->cookie->write();
 
-        if (Configuration::get('PS_ORDER_PROCESS_TYPE')) {
-            Tools::redirect($this->context->link->getPageLink('order-opc', true, $this->getOrder()->id_lang, $params));
+            if (Configuration::get('PS_ORDER_PROCESS_TYPE')) {
+                Tools::redirect($this->context->link->getPageLink('order-opc', true, $this->getOrder()->id_lang, null));
+            }
+            Tools::redirect($this->context->link->getPageLink('order', true, $this->getOrder()->id_lang, null));
         }
-        Tools::redirect($this->context->link->getPageLink('order', true, $this->getOrder()->id_lang, $params));
     }
 
     public function hookDisplayPDFInvoice($params)
