@@ -49,6 +49,7 @@ $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_162f5b330
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_3fb20ad24cbc5a57b91a57a396679fec'] = 'Zahlungsmittel nicht aktiviert.';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_27ea1853e76889e2bb5a34ba79e14d55'] = 'Ergebnisse des Bezahlprozesses konnten nicht verlässlich gespeichert werden. Bitte überprüfen Sie die Zahlungen im Wirecard Payment Center.';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_73a61696f100b3858511e212a3feea6b'] = 'Kreditkarte';
+$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_0d2ecb55b0dcb203411b067ba3905803'] = 'Masterpass';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_677c0ab38809416b6b9cf96f0d563c77'] = 'Kreditkarte - Mail Order and Telephone Order';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_1f2bdd630c44333f17bb08ff1b862eec'] = 'MasterCard SecureCode';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_c09143333604374dfc935b1843553604'] = 'eps Online-Überweisung';

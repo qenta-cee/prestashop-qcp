@@ -67,6 +67,7 @@ final class Wirecard_CEE_QPay_Initiation
     private static $REQUEST_FINGERPRINT_ORDER = 'requestFingerprintOrder';
     private static $PLUGIN_VERSION = 'pluginVersion';
     private static $CONSUMER_MERCHANT_CRM_ID = 'consumerMerchantCrmId';
+    private static $SHIPPING_PROFILE = 'shippingProfile';
     
     /**
      * creates an instance of {@link Wirecard_CEE_QPay_Initiation}
@@ -265,12 +266,23 @@ final class Wirecard_CEE_QPay_Initiation
     
     /**
      * sets the qpay parameter confirmMail
-     * @param type $confirmMail
+     * @param string $confirmMail
      * @return Wirecard_CEE_QPay_Initiation 
      */
     public function setConfirmMail($confirmMail)
     {
         $this->__set(self::$CONFIRM_MAIL, $confirmMail);
+        return $this;
+    }
+
+    /**
+     * sets the qpay parameter shippingProfile
+     * @param string $shippingProfile
+     * @return Wirecard_CEE_QPay_Initiation
+     */
+    public function setShippingProfile($shippingProfile)
+    {
+        $this->__set(self::$SHIPPING_PROFILE, $shippingProfile);
         return $this;
     }
     

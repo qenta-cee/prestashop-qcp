@@ -81,6 +81,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     const WCP_PT_CCARD = 'WCP_PT_CCARD';
     const WCP_PT_CCARD_MOTO = 'WCP_PT_CCARD-MOTO';
     const WCP_PT_MAESTRO = 'WCP_PT_MAESTRO';
+    const WCP_PT_MASTERPASS = 'WCP_PT_MASTERPASS';
     const WCP_PT_EPS = 'WCP_PT_EPS';
     const WCP_PT_IDL = 'WCP_PT_IDL';
     const WCP_PT_GIROPAY = 'WCP_PT_GIROPAY';
@@ -95,7 +96,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     const WCP_PT_TRUSTPAY = 'WCP_PT_TRUSTPAY';
     const WCP_PT_INVOICE = 'WCP_PT_INVOICE';
     const WCP_PT_INSTALLMENT = 'WCP_PT_INSTALLMENT';
-    const WCP_PT_BANCONTACT_MISTERCASH = 'WCP_PT_BANCONTACT_MISTERCASH';
+    const WCP_PT_BANCONTACT = 'WCP_PT_BANCONTACT';
     const WCP_PT_P24 = 'WCP_PT_PRZELEWY24';
     const WCP_PT_MONETA = 'WCP_PT_MONETA';
     const WCP_PT_POLI = 'WCP_PT_POLI';
@@ -124,7 +125,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.0';
+        $this->version = '2.1.0';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -825,6 +826,10 @@ class WirecardCEECheckoutPage extends PaymentModule
                 $pluginVersion['pluginVersion'],
                 array()
             );
+
+        if($paymentType == Wirecard_CEE_QPay_PaymentType::MASTERPASS){
+            $request->setShippingProfile('NO_SHIPPING');
+        }
         //additionally parameters can be added easily because of the magic method __set
         $request->psOrderNumber = $this->getOrder()->id;
 
@@ -1067,10 +1072,10 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     private function getPaymentTypes()
     {
-        return array(self::WCP_PT_CCARD, self::WCP_PT_CCARD_MOTO, self::WCP_PT_MAESTRO, self::WCP_PT_EPS,
+        return array(self::WCP_PT_CCARD, self::WCP_PT_CCARD_MOTO, self::WCP_PT_MAESTRO, self::WCP_PT_MASTERPASS, self::WCP_PT_EPS,
             self::WCP_PT_IDL, self::WCP_PT_GIROPAY, self::WCP_PT_TATRAPAY, self::WCP_PT_SOFORTUEBERWEISUNG,
             self::WCP_PT_PBX, self::WCP_PT_QUICK, self::WCP_PT_PAYPAL, self::WCP_PT_EPAY_BG, self::WCP_PT_SEPA_DD,
-            self::WCP_PT_TRUSTPAY, self::WCP_PT_INVOICE, self::WCP_PT_INSTALLMENT, self::WCP_PT_BANCONTACT_MISTERCASH,
+            self::WCP_PT_TRUSTPAY, self::WCP_PT_INVOICE, self::WCP_PT_INSTALLMENT, self::WCP_PT_BANCONTACT,
             self::WCP_PT_P24, self::WCP_PT_MONETA, self::WCP_PT_POLI, self::WCP_PT_EKONTO, self::WCP_PT_TRUSTLY,
             self::WCP_PT_SKRILLWALLET, self::WCP_PT_VOUCHER);
     }
@@ -1087,6 +1092,9 @@ class WirecardCEECheckoutPage extends PaymentModule
             case self::WCP_PT_MAESTRO:
                 return array('title' => $this->l('MasterCard SecureCode'),
                     'value' => Wirecard_CEE_QPay_PaymentType::MAESTRO);
+            case self::WCP_PT_MASTERPASS:
+                return array('title' => $this->l('Masterpass'),
+                    'value' => Wirecard_CEE_QPay_PaymentType::MASTERPASS);
             case self::WCP_PT_EPS:
                 return array('title' => $this->l('eps Online-Überweisung'),
                     'value' => Wirecard_CEE_QPay_PaymentType::EPS);
@@ -1129,7 +1137,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             case self::WCP_PT_INSTALLMENT:
                 return array('title' => $this->l('Installment'),
                     'value' => Wirecard_CEE_QPay_PaymentType::INSTALLMENT);
-            case self::WCP_PT_BANCONTACT_MISTERCASH:
+            case self::WCP_PT_BANCONTACT:
                 return array('title' => $this->l('Bancontact'),
                     'value' => Wirecard_CEE_QPay_PaymentType::BANCONTACT_MISTERCASH);
             case self::WCP_PT_P24:
