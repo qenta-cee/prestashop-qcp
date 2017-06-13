@@ -71,8 +71,6 @@ $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_1badcb6bf
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_d822a505bd8d5faef8f7fd081c9517e0'] = 'POLi';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_0ff52aceaf88adbdfb1a1e628a66b6cf'] = 'eKonto';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_31797189117cf605565c9d330601cc7f'] = 'Trustly';
-$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_fc695527ce186f3a87ac588d9cc8339d'] = 'mpass';
-$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_ffe0b676beb70ae97ad71df7fa9321d1'] = 'Skrill Direct';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_1525848c624bf1a02dfce01c9e8145cf'] = 'Skrill Digital Wallet';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_a38734e15f454bd7fb7546a29f19a3cc'] = 'Mein Gutschein';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_ccf55b98ae88096af98ec961d64b489b'] = 'Der Konsument kann ein aktiviertes Zahlungsmittel direkt in der Wirecard Checkout Page auswählen.';

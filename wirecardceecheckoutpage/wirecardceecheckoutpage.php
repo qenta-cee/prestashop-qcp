@@ -101,8 +101,6 @@ class WirecardCEECheckoutPage extends PaymentModule
     const WCP_PT_POLI = 'WCP_PT_POLI';
     const WCP_PT_EKONTO = 'WCP_PT_EKONTO';
     const WCP_PT_TRUSTLY = 'WCP_PT_TRUSTLY';
-    const WCP_PT_MPASS = 'WCP_PT_MPASS';
-    const WCP_PT_SKRILLDIRECT = 'WCP_PT_SKRILLDIRECT';
     const WCP_PT_SKRILLWALLET = 'WCP_PT_SKRILLWALLET';
     const WCP_PT_VOUCHER = 'WCP_PT_VOUCHER';
 
@@ -1074,7 +1072,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             self::WCP_PT_PBX, self::WCP_PT_QUICK, self::WCP_PT_PAYPAL, self::WCP_PT_EPAY_BG, self::WCP_PT_SEPA_DD,
             self::WCP_PT_TRUSTPAY, self::WCP_PT_INVOICE, self::WCP_PT_INSTALLMENT, self::WCP_PT_BANCONTACT_MISTERCASH,
             self::WCP_PT_P24, self::WCP_PT_MONETA, self::WCP_PT_POLI, self::WCP_PT_EKONTO, self::WCP_PT_TRUSTLY,
-            self::WCP_PT_MPASS, self::WCP_PT_SKRILLDIRECT, self::WCP_PT_SKRILLWALLET, self::WCP_PT_VOUCHER);
+            self::WCP_PT_SKRILLWALLET, self::WCP_PT_VOUCHER);
     }
 
     private function getPaymentTypeInfo($type)
@@ -1149,12 +1147,6 @@ class WirecardCEECheckoutPage extends PaymentModule
             case self::WCP_PT_TRUSTLY:
                 return array('title' => $this->l('Trustly'),
                     'value' => Wirecard_CEE_QPay_PaymentType::TRUSTLY);
-            case self::WCP_PT_MPASS:
-                return array('title' => $this->l('mpass'),
-                    'value' => Wirecard_CEE_QPay_PaymentType::MPASS);
-            case self::WCP_PT_SKRILLDIRECT:
-                return array('title' => $this->l('Skrill Direct'),
-                    'value' => Wirecard_CEE_QPay_PaymentType::SKRILLDIRECT);
             case self::WCP_PT_SKRILLWALLET:
                 return array('title' => $this->l('Skrill Digital Wallet'),
                     'value' => Wirecard_CEE_QPay_PaymentType::SKRILLWALLET);
