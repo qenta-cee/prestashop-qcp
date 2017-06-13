@@ -1130,7 +1130,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                 return array('title' => $this->l('Installment'),
                     'value' => Wirecard_CEE_QPay_PaymentType::INSTALLMENT);
             case self::WCP_PT_BANCONTACT_MISTERCASH:
-                return array('title' => $this->l('Bancontact/Mister Cash'),
+                return array('title' => $this->l('Bancontact'),
                     'value' => Wirecard_CEE_QPay_PaymentType::BANCONTACT_MISTERCASH);
             case self::WCP_PT_P24:
                 return array('title' => $this->l('Przelewy24'),

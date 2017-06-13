@@ -65,7 +65,7 @@ $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_c0db4214f
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_e5532ed7b6c5ecb396dd70f0e4283f64'] = 'TrustPay';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_466eadd40b3c10580e3ab4e8061161ce'] = 'Invoice';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_459f93c30d7bc374abe95e0d8a1c66b0'] = 'Installment';
-$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_46794af42524fa65bce0ff7acdc7b753'] = 'Bancontact/Mister Cash';
+$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_870cf6bc77bbadd038aeb8d942c9cb18'] = 'Bancontact';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_b02f3d1095fbd0490caa31090d2aac19'] = 'Przelewy24';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_1badcb6bf3c9f9a61b9221344ccdc53c'] = 'moneta.ru';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_d822a505bd8d5faef8f7fd081c9517e0'] = 'POLi';
