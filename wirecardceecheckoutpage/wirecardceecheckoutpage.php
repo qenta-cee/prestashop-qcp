@@ -638,11 +638,40 @@ class WirecardCEECheckoutPage extends PaymentModule
         unset($this->context->cookie->qpayRedirectUrl);
         $paymentTypes = $this->getEnabledPaymentTypes($params['cart']);
 
+        $logo = function ($payment_type) {
+            return ".." . Media::getMediaPath('/modules/wirecardceecheckoutpage/img/payment_types/' . strtolower($payment_type) . '.png');
+        };
+
         foreach ($paymentTypes as $paymentType) {
             $payment = new PaymentOption();
-            $payment->setLogo(Media::getMediaPath(dirname(__FILE__) . '/img/payment_types/' . strtolower($paymentType['value']) . '.png'))
-                ->setCallToActionText($this->l('Pay using') . ' ' . $this->l($paymentType['title']))
-                ->setAction($this->context->link->getModuleLink($this->name, 'payment', array('paymentType' => $paymentType['value']), true));
+
+            $current_method = $paymentType['value'];
+            $payment->setLogo($logo(strtolower($current_method)))
+                ->setCallToActionText($this->l('Pay using') . ' ' . $this->l($paymentType['title']));
+
+            $action = $this->context->link->getModuleLink(
+                $this->name,
+                'payment',
+                array('paymentType' => $current_method),
+                true);
+            $template = "module:wirecardceecheckoutpage/views/templates/hook/methods/" . strtolower($current_method) . ".tpl";
+            $payment_class = new Wirecard_CEE_QPay_PaymentType($current_method);
+
+            if ($this->context->smarty->templateExists($template)) {
+                $this->context->smarty->assign(
+                    array(
+                        "action" => $action,
+                        "method" => $current_method,
+                        "financialInstitutions" => $payment_class->getFinancialInstitutions(),
+                        "submit_text" => $this->l('Pay using') . ' ' . $this->l($paymentType['title'])
+                    )
+                );
+
+                $payment->setBinary(true);
+                $payment->setForm($this->context->smarty->fetch($template));
+            } else {
+                $payment->setAction($action);
+            }
 
             $result[] = $payment;
         }
@@ -826,6 +855,10 @@ class WirecardCEECheckoutPage extends PaymentModule
                 $pluginVersion['pluginVersion'],
                 array()
             );
+
+        if( Tools::strlen(Tools::getValue('financialInstitution'))){
+            $request->setFinancialInstitution(Tools::getValue('financialInstitution'));
+        }
 
         if($paymentType == Wirecard_CEE_QPay_PaymentType::MASTERPASS){
             $request->setShippingProfile('NO_SHIPPING');
