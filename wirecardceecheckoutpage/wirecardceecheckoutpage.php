@@ -1131,7 +1131,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                 return array('title' => $this->l('Credit Card - Mail Order and Telephone Order'),
                     'value' => Wirecard_CEE_QPay_PaymentType::CCARD_MOTO);
             case self::WCP_PT_MAESTRO:
-                return array('title' => $this->l('MasterCard SecureCode'),
+                return array('title' => $this->l('Maestro SecureCode'),
                     'value' => Wirecard_CEE_QPay_PaymentType::MAESTRO);
             case self::WCP_PT_MASTERPASS:
                 return array('title' => $this->l('Masterpass'),
