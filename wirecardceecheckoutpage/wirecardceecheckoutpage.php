@@ -70,8 +70,20 @@ class WirecardCEECheckoutPage extends PaymentModule
     const WCP_MAX_RETRIES = 'WCP_MAX_RETRIES';
     const WCP_INVOICE_MIN = 'WCP_INVOICE_MIN';
     const WCP_INVOICE_MAX = 'WCP_INVOICE_MAX';
+    const WCP_INVOICE_PROVIDER = 'WCP_INVOICE_PROVIDER';
+    const WCP_INVOICE_ADDRESS_EQUAL = 'WCP_INVOICE_ADDRESS_EQUAL';
+    const WCP_INVOICE_BILLING_COUNTRIES = 'WCP_INVOICE_BILLING_COUNTRIES';
+    const WCP_INVOICE_SHIPPING_COUNTRIES = 'WCP_INVOICE_SHIPPING_COUNTRIES';
+    const WCP_INVOICE_CURRENCIES = 'WCP_INVOICE_CURRENCIES';
     const WCP_INSTALLMENT_MIN = 'WCP_INSTALLMENT_MIN';
     const WCP_INSTALLMENT_MAX = 'WCP_INSTALLMENT_MAX';
+    const WCP_INSTALLMENT_PROVIDER = 'WCP_INSTALLMENT_PROVIDER';
+    const WCP_INSTALLMENT_ADDRESS_EQUAL = 'WCP_INSTALLMENT_ADDRESS_EQUAL';
+    const WCP_INSTALLMENT_BILLING_COUNTRIES = 'WCP_INSTALLMENT_BILLING_COUNTRIES';
+    const WCP_INSTALLMENT_SHIPPING_COUNTRIES = 'WCP_INSTALLMENT_SHIPPING_COUNTRIES';
+    const WCP_INSTALLMENT_CURRENCIES = 'WCP_INSTALLMENT_CURRENCIES';
+    const WCP_PAYOLUTION_TERMS = 'WCP_PAYOLUTION_TERMS';
+    const WCP_PAYOLUTION_MID = 'WCP_PAYOLUTION_MID';
     const WCP_TRANSACTION_ID = 'WCP_TRANSACTION_ID';
     const WCP_AUTO_DEPOSIT = 'WCP_AUTO_DEPOSIT';
     const WCP_SEND_ADDITIONAL_DATA = 'WCP_SEND_ADDITIONAL_DATA';
@@ -300,6 +312,73 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $this->html;
     }
 
+    /**
+     * return available currency iso codes
+     *
+     * @return array
+     */
+    protected function getCurrencies()
+    {
+        $currencies = Currency::getCurrencies();
+        $ret = array();
+        foreach ($currencies as $currency) {
+            $ret[] = array(
+                'key' => $currency['iso_code'],
+                'value' => $currency['name']
+            );
+        }
+
+        return $ret;
+    }
+
+    /**
+     * return available country iso codes
+     *
+     * @return array
+     */
+    protected function getCountries()
+    {
+        $cookie = $this->context->cookie;
+        $countries = Country::getCountries($cookie->id_lang);
+        $ret = array();
+        foreach ($countries as $country) {
+            $ret[] = array(
+                'key' => $country['iso_code'],
+                'value' => $country['name']
+            );
+        }
+
+        return $ret;
+    }
+
+    /**
+     * return available usergroups iso codes
+     *
+     * @return array
+     */
+    protected function getUserGroups()
+    {
+        $cookie = $this->context->cookie;
+        $groups = Group::getGroups($cookie->id_lang);
+        $visitor_group = Configuration::get('PS_UNIDENTIFIED_GROUP');
+        $guest_group = Configuration::get('PS_GUEST_GROUP');
+        $cust_group = Configuration::get('PS_CUSTOMER_GROUP');
+        $ret = array();
+        foreach ($groups as $g) {
+            // exclude standard groups
+            if (in_array(
+                $g['id_group'],
+                array($visitor_group, $guest_group, $cust_group)
+            )) {
+                continue;
+            }
+
+            $ret[] = array('key' => $g['id_group'], 'value' => $g['name']);
+        }
+
+        return $ret;
+    }
+
     private function config()
     {
         $radio_type = 'onoff';
@@ -369,34 +448,6 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'desc' => $this->l('Maximum number of payment attempts regarding a certain order.').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#maxretries">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
-                        'type' => 'text',
-                        'label' => $this->l('Invoice minimum amount'),
-                        'name' => self::WCP_INVOICE_MIN,
-                        'class' => 'fixed-width-md',
-                        'suffix' => 'EUR'
-                    ),
-                    array(
-                        'type' => 'text',
-                        'label' => $this->l('Invoice maximum amount'),
-                        'name' => self::WCP_INVOICE_MAX,
-                        'class' => 'fixed-width-md',
-                        'suffix' => 'EUR'
-                    ),
-                    array(
-                        'type' => 'text',
-                        'label' => $this->l('Installment minimum amount'),
-                        'name' => self::WCP_INSTALLMENT_MIN,
-                        'class' => 'fixed-width-md',
-                        'suffix' => 'EUR'
-                    ),
-                    array(
-                        'type' => 'text',
-                        'label' => $this->l('Installment maximum amount'),
-                        'name' => self::WCP_INSTALLMENT_MAX,
-                        'class' => 'fixed-width-md',
-                        'suffix' => 'EUR'
-                    ),
-                    array(
                         'type' => 'select',
                         'label' => $this->l('Transaction ID'),
                         'name' => self::WCP_TRANSACTION_ID,
@@ -428,9 +479,23 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'is_bool' => true,
                         'class' => 't',
                         'values' => $radio_options
-                    )
+                    ),
+                    array(
+                        'name' => self::WCP_PAYOLUTION_TERMS,
+                        'label' => $this->l('payolution terms'),
+                        'type' => 'onoff',
+                        'default' => 1,
+                        'doc' => $this->l('Consumer must accept payolution terms during the checkout process.'),
+                        'docref' => 'https://guides.wirecard.at/payment_methods:invoice:payolution'
+                    ),
+                    array(
+                        'name' => self::WCP_PAYOLUTION_MID,
+                        'label' => $this->l('payolution mID'),
+                        'type' => 'text',
+                        'doc' => $this->l('Your payolution merchant ID, non-base64-encoded.')
+                    ),
                 )
-            ),
+            )
         );
 
         $paymentTypeSwitches = array();
@@ -453,7 +518,170 @@ class WirecardCEECheckoutPage extends PaymentModule
             ),
         );
 
-        $settings = array_merge($fields_form_settings,$fields_form_payment);
+        $invoice_options = array(
+            'invoiceoptions' => array(
+                'tab' => $this->l('Invoice'),
+                'fields' => array(
+                    array(
+                        'name' => self::WCP_INVOICE_PROVIDER,
+                        'label' => $this->l('Invoice provider'),
+                        'type' => 'select',
+                        'group' => 'pt',
+                        'default' => 'payolution',
+                        'required' => true,
+                        'options' => array(
+                            array(
+                                'key' => 'payolution',
+                                'value' => 'payolution'
+                            ),
+                            array('key' => 'ratepay', 'value' => 'RatePay'),
+                        )
+                    ),
+                    array(
+                        'name' => self::WCP_INVOICE_ADDRESS_EQUAL,
+                        'label' => $this->l('Billing/shipping address must be identical'),
+                        'type' => 'onoff',
+                        'default' => 1,
+                        'group' => 'pt'
+                    ),
+                    array(
+                        'name' => self::WCP_INVOICE_BILLING_COUNTRIES,
+                        'label' => $this->l('Allowed billing countries'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'size' => 10,
+                        'default' => array('AT', 'DE', 'CH'),
+                        'options' => 'getCountries',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::WCP_INVOICE_SHIPPING_COUNTRIES,
+                        'label' => $this->l('Allowed shipping countries'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'size' => 10,
+                        'default' => array('AT', 'DE', 'CH'),
+                        'options' => 'getCountries',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::WCP_INVOICE_CURRENCIES,
+                        'label' => $this->l('Accepted currencies'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'default' => array('EUR'),
+                        'options' => 'getCurrencies',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::WCP_INVOICE_MIN,
+                        'label' => $this->l('Minimum amount'),
+                        'type' => 'text',
+                        'group' => 'pt',
+                        'validator' => 'numeric',
+                        'default' => 150,
+                        'cssclass' => 'fixed-width-md',
+                        'suffix' => 'EUR'
+                    ),
+                    array(
+                        'name' => self::WCP_INVOICE_MAX,
+                        'label' => $this->l('Maximum amount'),
+                        'type' => 'text',
+                        'group' => 'pt',
+                        'default' => 3500,
+                        'validator' => 'numeric',
+                        'cssclass' => 'fixed-width-md',
+                        'suffix' => 'EUR'
+                    )
+                )
+            )
+        );
+
+        $installment_options = array(
+            'installmentoptions' => array(
+                'tab' => $this->l('Installment'),
+                'fields' => array(
+                    array(
+                        'name' => self::WCP_INSTALLMENT_PROVIDER,
+                        'label' => $this->l('Installment provider'),
+                        'type' => 'select',
+                        'group' => 'pt',
+                        'default' => 'payolution',
+                        'required' => true,
+                        'options' => array(
+                            array(
+                                'key' => 'payolution',
+                                'value' => 'payolution'
+                            ),
+                            array('key' => 'ratepay', 'value' => 'RatePay'),
+                        )
+                    ),
+                    array(
+                        'name' => self::WCP_INSTALLMENT_ADDRESS_EQUAL,
+                        'label' => $this->l('Billing/shipping address must be identical'),
+                        'type' => 'onoff',
+                        'default' => 1,
+                        'group' => 'pt'
+                    ),
+                    array(
+                        'name' => self::WCP_INSTALLMENT_BILLING_COUNTRIES,
+                        'label' => $this->l('Allowed billing countries'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'size' => 10,
+                        'default' => array('AT', 'DE', 'CH'),
+                        'options' => 'getCountries',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::WCP_INSTALLMENT_SHIPPING_COUNTRIES,
+                        'label' => $this->l('Allowed shipping countries'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'size' => 10,
+                        'default' => array('AT', 'DE', 'CH'),
+                        'options' => 'getCountries',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::WCP_INSTALLMENT_CURRENCIES,
+                        'label' => $this->l('Accepted currencies'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'default' => array('EUR'),
+                        'options' => 'getCurrencies',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::WCP_INSTALLMENT_MIN,
+                        'label' => $this->l('Minimum amount'),
+                        'type' => 'text',
+                        'group' => 'pt',
+                        'validator' => 'numeric',
+                        'default' => 150,
+                        'cssclass' => 'fixed-width-md',
+                        'suffix' => 'EUR'
+                    ),
+                    array(
+                        'name' => self::WCP_INSTALLMENT_MAX,
+                        'label' => $this->l('Maximum amount'),
+                        'type' => 'text',
+                        'group' => 'pt',
+                        'default' => 3500,
+                        'validator' => 'numeric',
+                        'cssclass' => 'fixed-width-md',
+                        'suffix' => 'EUR'
+                    )
+                )
+            )
+        );
+
+        $settings = array_merge(
+            $fields_form_settings,
+            $fields_form_payment,
+            $invoice_options,
+            $installment_options
+        );
 
         return $settings;
     }
@@ -480,11 +708,6 @@ class WirecardCEECheckoutPage extends PaymentModule
         foreach ($this->config as $groupKey => $group) {
             $tabs[$groupKey] = $this->l($group['tab']);
             foreach ($group['fields'] as $f) {
-                $configGroup = isset($f['group']) ? $f['group'] : $groupKey;
-                if (isset($f['class'])) {
-                    $configGroup = 'pt';
-                }
-
                 $elem = array(
                     'name' => $f['name'],
                     'label' => $this->l($f['label']),
@@ -641,6 +864,10 @@ class WirecardCEECheckoutPage extends PaymentModule
             return false;
         }
 
+        $customer_id = $params['cookie']->id_customer;
+        $customer = new Customer($customer_id);
+        $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d",$customer->birthday))->y;
+
         $result = array();
 
         unset($this->context->cookie->qpayRedirectUrl);
@@ -669,9 +896,19 @@ class WirecardCEECheckoutPage extends PaymentModule
                 $this->context->smarty->assign(
                     array(
                         "action" => $action,
+                        'days' => Tools::dateDays(),
+                        'months' => Tools::dateMonths(),
+                        'years' => Tools::dateYears(),
                         "method" => $current_method,
                         "financialInstitutions" => $payment_class->getFinancialInstitutions(),
-                        "submit_text" => $this->l('Pay using') . ' ' . $this->l($paymentType['title'])
+                        "min_age_message" => $this->l("You have to be 18 years or older to use this payment."),
+                        "show_birthdate" => $age < 18,
+                        "consent_error_message" => $this->l("Please accept the consent terms!"),
+                        "consent_text" => $this->l("I agree that the data which are necessary for the liquidation of invoice payments and which are used to complete the identity and credit check are transmitted to payolution.  My %s can be revoked at any time with future effect."),
+                        "consent" => $this->l("consent"),
+                        "submit_text" => $this->l('Pay using') . ' ' . $this->l($paymentType['title']),
+                        "has_consent" => Configuration::get(self::WCP_PAYOLUTION_TERMS)
+                            && (($current_method == Wirecard_CEE_QPay_PaymentType::INVOICE && Configuration::get(self::WCP_INVOICE_PROVIDER) == 'payolution') || ($current_method === Wirecard_CEE_QPay_PaymentType::INSTALLMENT && Configuration::get(self::WCP_INSTALLMENT_PROVIDER) == 'payolution'))
                     )
                 );
 
@@ -1104,11 +1341,14 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     private function getAllConfigurationParameter()
     {
-        return array_merge(array(self::WCP_CONFIGURATION_MODE, self::WCP_CUSTOMER_ID, self::WCP_SHOP_ID,
-            self::WCP_SECRET, self::WCP_DISPLAY_TEXT, self::WCP_MAX_RETRIES, self::WCP_INVOICE_MIN,
-            self::WCP_INVOICE_MAX, self::WCP_INSTALLMENT_MIN, self::WCP_INSTALLMENT_MAX, self::WCP_TRANSACTION_ID,
-            self::WCP_AUTO_DEPOSIT, self::WCP_SEND_ADDITIONAL_DATA, self::WCP_USE_IFRAME, self::WCP_OS_AWAITING),
-            $this->getPaymentTypes());
+        $params = array();
+
+        foreach($this->config as $groupKey => $group){
+            foreach($group['fields'] as $f){
+               $params[] = $f['name'];
+            }
+        }
+        return $params;
     }
 
     private function getPaymentTypes()
@@ -1233,16 +1473,46 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $this->myOrder;
     }
 
+    private function getMultiSelectArray($key){
+        $val = Configuration::get($key);
+
+        if(!Tools::strlen($val)){
+            return array();
+        }
+
+        $ret = json_decode($val);
+        if( !is_array($ret)){
+            return array();
+        }
+        return $ret;
+    }
+
     private function isInvoiceAllowed(Cart $cart)
     {
+        $chosen_currencies = $this->getMultiSelectArray(self::WCP_INVOICE_CURRENCIES);
+        $chosen_shipping_countries = $this->getMultiSelectArray(self::WCP_INVOICE_SHIPPING_COUNTRIES);
+        $chosen_billing_countries = $this->getMultiSelectArray(self::WCP_INVOICE_BILLING_COUNTRIES);
+
         $currency = new Currency($cart->id_currency);
-        if ($currency->iso_code != 'EUR') {
+        if (!in_array($currency->iso_code, $chosen_currencies)) {
             return false;
         }
 
         $customer = new Customer($cart->id_customer);
         $billingAddress = new Address($cart->id_address_invoice);
         $shippingAddress = new Address($cart->id_address_delivery);
+
+        if (!in_array((new Country($billingAddress->id_country))->iso_code,
+            $chosen_billing_countries)
+        ) {
+            return false;
+        }
+
+        if (!in_array((new Country($shippingAddress->id_country))->iso_code,
+            $chosen_shipping_countries)
+        ) {
+            return false;
+        }
 
         $d1 = new DateTime($customer->birthday);
         $diff = $d1->diff(new DateTime);
@@ -1276,8 +1546,12 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     private function isInstallmentAllowed(Cart $cart)
     {
+        $chosen_currencies = $this->getMultiSelectArray(self::WCP_INSTALLMENT_CURRENCIES);
+        $chosen_shipping_countries = $this->getMultiSelectArray(self::WCP_INSTALLMENT_SHIPPING_COUNTRIES);
+        $chosen_billing_countries = $this->getMultiSelectArray(self::WCP_INSTALLMENT_BILLING_COUNTRIES);
+
         $currency = new Currency($cart->id_currency);
-        if ($currency->iso_code != 'EUR') {
+        if (!in_array($currency->iso_code,$chosen_currencies)) {
             return false;
         }
 
@@ -1285,6 +1559,20 @@ class WirecardCEECheckoutPage extends PaymentModule
 
         $billingAddress = new Address($cart->id_address_invoice);
         $shippingAddress = new Address($cart->id_address_delivery);
+
+        if (!in_array(
+            (new Country($billingAddress->id_country))->iso_code,
+            $chosen_billing_countries)
+        ) {
+            return false;
+        }
+
+        if (!in_array(
+            (new Country($shippingAddress->id_country))->iso_code,
+            $chosen_shipping_countries)
+        ) {
+            return false;
+        }
 
         $d1 = new DateTime($customer->birthday);
         $diff = $d1->diff(new DateTime());

@@ -1,0 +1,1 @@
+{include 'module:wirecardceecheckoutpage/views/templates/hook/methods/invoice.tpl'}
