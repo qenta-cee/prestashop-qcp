@@ -10,6 +10,6 @@
         </select>
     </div>
     <div class="form-group">
-        <button class="btn btn-primary center-block" type="submit">{$submit_text|escape:'htmlall':'UTF-8'}</button>
+        <button class="btn btn-primary center-block" type="submit" disabled="disabled">{$submit_text|escape:'htmlall':'UTF-8'}</button>
     </div>
 </form>

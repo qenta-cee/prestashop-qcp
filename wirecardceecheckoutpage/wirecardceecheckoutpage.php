@@ -210,6 +210,14 @@ class WirecardCEECheckoutPage extends PaymentModule
                     'priority' => 200,
                 ]
             );
+            $this->context->controller->registerJavascript(
+                'module-' . $this->name . '-script',
+                'modules/' . $this->name . '/scripts/script.js',
+                [
+                    'media' => 'all',
+                    'priority' => 200,
+                ]
+            );
         }
     }
 
@@ -630,7 +638,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     public function hookPaymentOptions($params)
     {
         if (!$this->active) {
-            return;
+            return false;
         }
 
         $result = array();
@@ -1105,7 +1113,7 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     private function getPaymentTypes()
     {
-        return array(self::WCP_PT_CCARD, self::WCP_PT_CCARD_MOTO, self::WCP_PT_MAESTRO, self::WCP_PT_MASTERPASS, self::WCP_PT_EPS,
+        return array(self::WCP_PT_CCARD, self::WCP_PT_MASTERPASS, self::WCP_PT_CCARD_MOTO, self::WCP_PT_MAESTRO, self::WCP_PT_EPS,
             self::WCP_PT_IDL, self::WCP_PT_GIROPAY, self::WCP_PT_TATRAPAY, self::WCP_PT_SOFORTUEBERWEISUNG,
             self::WCP_PT_PBX, self::WCP_PT_QUICK, self::WCP_PT_PAYPAL, self::WCP_PT_EPAY_BG, self::WCP_PT_SEPA_DD,
             self::WCP_PT_TRUSTPAY, self::WCP_PT_INVOICE, self::WCP_PT_INSTALLMENT, self::WCP_PT_BANCONTACT,
