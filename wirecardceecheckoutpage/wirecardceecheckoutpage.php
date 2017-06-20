@@ -42,7 +42,6 @@ require('Wirecard/CEE/QPay/PaymentType.php');
 
 class WirecardCEECheckoutPage extends PaymentModule
 {
-    const WCP_CONFIGURATION_MODE_DEFAULT = 'production';
     const WCP_CUSTOMER_ID_DEMO = 'D200001';
     const WCP_SHOP_ID_DEMO = '';
     const WCP_SECRET_DEMO = 'B8AKTPWBRMNBV455FG6M2DANE99WU2';
@@ -52,14 +51,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     const WCP_CUSTOMER_ID_TEST3D = 'D200411';
     const WCP_SHOP_ID_TEST3D = '3D';
     const WCP_SECRET_TEST3D = 'DP4TMTPQQWFJW34647RM798E9A5X7E8ATP462Z4VGZK53YEJ3JWXS98B9P4F';
-    const WCP_DISPLAY_TEXT_DEFAULT = '';
-    const WCP_MAX_RETRIES_DEFAULT = '-1';
-    const WCP_TRANSACTION_ID_DEFAULT = 'orderNumber';
-    const WCP_AUTO_DEPOSIT_DEFAULT = 0;
-    const WCP_SEND_ADDITIONAL_DATA_DEFAULT = 1;
-    const WCP_USE_IFRAME_DEFAULT = 1;
     const WCP_PT_DEFAULT = 0;
-    const WCP_AMOUNT_DEFAULT = '';
     const WINDOW_NAME = 'Checkout_Page_Frame';
     
     const WCP_CONFIGURATION_MODE = 'WCP_CONFIGURATION_MODE';
@@ -159,23 +151,23 @@ class WirecardCEECheckoutPage extends PaymentModule
             || !$this->registerHook('paymentOptions')
             || !$this->registerHook('paymentReturn')
             || !$this->registerHook('actionFrontControllerSetMedia')
-            || !Configuration::updateValue(self::WCP_CONFIGURATION_MODE, self::WCP_CONFIGURATION_MODE_DEFAULT)
-            || !Configuration::updateValue(self::WCP_CUSTOMER_ID, self::WCP_CUSTOMER_ID_DEMO)
-            || !Configuration::updateValue(self::WCP_SHOP_ID, self::WCP_SHOP_ID_DEMO)
-            || !Configuration::updateValue(self::WCP_SECRET, self::WCP_SECRET_DEMO)
-            || !Configuration::updateValue(self::WCP_DISPLAY_TEXT, self::WCP_DISPLAY_TEXT_DEFAULT)
-            || !Configuration::updateValue(self::WCP_MAX_RETRIES, self::WCP_MAX_RETRIES_DEFAULT)
-            || !Configuration::updateValue(self::WCP_INVOICE_MIN, self::WCP_AMOUNT_DEFAULT)
-            || !Configuration::updateValue(self::WCP_INVOICE_MAX, self::WCP_AMOUNT_DEFAULT)
-            || !Configuration::updateValue(self::WCP_INSTALLMENT_MIN, self::WCP_AMOUNT_DEFAULT)
-            || !Configuration::updateValue(self::WCP_INSTALLMENT_MAX, self::WCP_AMOUNT_DEFAULT)
-            || !Configuration::updateValue(self::WCP_TRANSACTION_ID, self::WCP_TRANSACTION_ID_DEFAULT)
-            || !Configuration::updateValue(self::WCP_AUTO_DEPOSIT, self::WCP_AUTO_DEPOSIT_DEFAULT)
-            || !Configuration::updateValue(self::WCP_SEND_ADDITIONAL_DATA, self::WCP_SEND_ADDITIONAL_DATA_DEFAULT)
-            || !Configuration::updateValue(self::WCP_USE_IFRAME, self::WCP_USE_IFRAME_DEFAULT)
             || !$this->installPaymentTypes()
         ) {
             return false;
+        }
+
+        foreach ($this->getAllConfigurationParameter() as $parameter) {
+            if (isset($parameter['default'])) {
+                $default = $parameter['default'];
+                if (is_array($default)) {
+                    $default = json_encode($default);
+                }
+                if (!Configuration::updateGlobalValue($parameter['name'],
+                    $default)
+                ) {
+                    return false;
+                }
+            }
         }
 
         // http://forge.prestashop.com/browse/PSCFV-1712
@@ -245,7 +237,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     public function uninstall()
     {
         foreach ($this->getAllConfigurationParameter() as $parameter) {
-            Configuration::deleteByName($parameter);
+            Configuration::deleteByName($parameter['name']);
         }
 
         return parent::uninstall();
@@ -282,10 +274,16 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         if (Tools::isSubmit('btnSubmit')) {
             foreach ($this->getAllConfigurationParameter() as $parameter) {
+                $parameter = $parameter['name'];
                 if ($parameter == self::WCP_OS_AWAITING) {
                     continue;
                 }
-                Configuration::updateValue($parameter, Tools::getValue($parameter));
+                $val = Tools::getValue($parameter);
+
+                if (is_array($val)) {
+                    $val = json_encode($val);
+                }
+                Configuration::updateValue($parameter, $val);
             }
         }
         $this->html .= $this->displayConfirmation($this->l('Settings updated'));
@@ -379,6 +377,28 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $ret;
     }
 
+    protected function getProvider($which){
+        $ret = array(
+            array(
+                'key' => 'payolution',
+                'value' => 'payolution'
+            ),
+            array(
+                'key' => 'ratepay',
+                'value' => 'RatePay'
+            )
+        );
+
+        if($which==self::WCP_INVOICE_PROVIDER){
+            $ret[] = array(
+                'key' => 'wirecard',
+                'value' => 'virecard'
+            );
+        }
+
+        return $ret;
+    }
+
     private function config()
     {
         $radio_type = 'onoff';
@@ -395,6 +415,19 @@ class WirecardCEECheckoutPage extends PaymentModule
             )
         );
 
+        $paymentTypeSwitches = array();
+        foreach ($this->getPaymentTypes() as $paymentType) {
+            $info = $this->getPaymentTypeInfo($paymentType);
+            array_push($paymentTypeSwitches, array(
+                'type' => $radio_type,
+                'label' => $info['title'],
+                'name' => $paymentType,
+                'is_bool' => true,
+                'class' => 't',
+                'values' => $radio_options
+            ));
+        }
+
         $fields_form_settings = array(
             'settings' => array(
                 'tab' => $this->l('Settings'),
@@ -410,6 +443,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'type' => 'text',
                         'label' => $this->l('Customer ID'),
                         'name' => self::WCP_CUSTOMER_ID,
+                        'default' => 'D200001',
                         'required' => true,
                         'class' => 'fixed-width-xl',
                         'maxchar' => 7,
@@ -421,11 +455,13 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'name' => self::WCP_SHOP_ID,
                         'class' => 'fixed-width-xl',
                         'maxchar' => 16,
+                        'default' => '',
                         'desc' => $this->l('Shop identifier in case of more than one shop.').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#shopid">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
                         'type' => 'text',
                         'label' => $this->l('Secret'),
+                        'default' => 'B8AKTPWBRMNBV455FG6M2DANE99WU2',
                         'name' => self::WCP_SECRET,
                         'class' => 'fixed-width-xxl',
                         'required' => true,
@@ -437,6 +473,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'name' => self::WCP_DISPLAY_TEXT,
                         'class' => 'fixed-width-xl',
                         'required' => true,
+                        'default' => '',
                         'desc' => $this->l('Text displayed during the payment process, i.e. "Thank you for ordering in xy-shop".').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#displaytext">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
@@ -444,6 +481,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'label' => $this->l('Max. retries'),
                         'name' => self::WCP_MAX_RETRIES,
                         'class' => 'fixed-width-xs',
+                        'default' => '-1',
                         'required' => true,
                         'desc' => $this->l('Maximum number of payment attempts regarding a certain order.').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#maxretries">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
@@ -451,6 +489,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'type' => 'select',
                         'label' => $this->l('Transaction ID'),
                         'name' => self::WCP_TRANSACTION_ID,
+                        'default' => 'orderNumber',
                         'options' => 'getTransactionIdOptions',
                         'desc' => $this->l('Wirecard order number: Unique number defined by Wirecard identifying the payment.') . '<br>' . $this->l('Gateway reference number: Reference number defined by the processor or acquirer.')
                     ),
@@ -459,6 +498,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'label' => $this->l('Automated deposit'),
                         'name' => self::WCP_AUTO_DEPOSIT,
                         'is_bool' => true,
+                        'default' => 0,
                         'class' => 't',
                         'values' => $radio_options,
                         'desc' => $this->l('Enabling an automated deposit of payments.').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#autodeposit">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
@@ -469,6 +509,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'name' => self::WCP_SEND_ADDITIONAL_DATA,
                         'is_bool' => true,
                         'class' => 't',
+                        'default' => 1,
                         'values' => $radio_options,
                         'desc' => $this->l('Forwarding shipping and billing data about your consumer to the respective financial service provider.')
                     ),
@@ -476,6 +517,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'type' => $radio_type,
                         'label' => $this->l('Display as iframe'),
                         'name' => self::WCP_USE_IFRAME,
+                        'default' => 1,
                         'is_bool' => true,
                         'class' => 't',
                         'values' => $radio_options
@@ -484,7 +526,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'name' => self::WCP_PAYOLUTION_TERMS,
                         'label' => $this->l('payolution terms'),
                         'type' => 'onoff',
-                        'default' => 1,
+                        'default' => 0,
                         'doc' => $this->l('Consumer must accept payolution terms during the checkout process.'),
                         'docref' => 'https://guides.wirecard.at/payment_methods:invoice:payolution'
                     ),
@@ -493,32 +535,13 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'label' => $this->l('payolution mID'),
                         'type' => 'text',
                         'doc' => $this->l('Your payolution merchant ID, non-base64-encoded.')
-                    ),
+                    )
                 )
-            )
-        );
-
-        $paymentTypeSwitches = array();
-        foreach ($this->getPaymentTypes() as $paymentType) {
-            $info = $this->getPaymentTypeInfo($paymentType);
-            array_push($paymentTypeSwitches, array(
-                    'type' => $radio_type,
-                    'label' => $info['title'],
-                    'name' => $paymentType,
-                    'is_bool' => true,
-                    'class' => 't',
-                    'values' => $radio_options
-                ));
-        }
-
-        $fields_form_payment = array(
+            ),
             'paymentmethods' => array(
                 'tab' => $this->l('Payment methods'),
                 'fields' => $paymentTypeSwitches
             ),
-        );
-
-        $invoice_options = array(
             'invoiceoptions' => array(
                 'tab' => $this->l('Invoice'),
                 'fields' => array(
@@ -529,13 +552,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'group' => 'pt',
                         'default' => 'payolution',
                         'required' => true,
-                        'options' => array(
-                            array(
-                                'key' => 'payolution',
-                                'value' => 'payolution'
-                            ),
-                            array('key' => 'ratepay', 'value' => 'RatePay'),
-                        )
+                        'options' => 'getProvider',
                     ),
                     array(
                         'name' => self::WCP_INVOICE_ADDRESS_EQUAL,
@@ -594,10 +611,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'suffix' => 'EUR'
                     )
                 )
-            )
-        );
-
-        $installment_options = array(
+            ),
             'installmentoptions' => array(
                 'tab' => $this->l('Installment'),
                 'fields' => array(
@@ -608,14 +622,9 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'group' => 'pt',
                         'default' => 'payolution',
                         'required' => true,
-                        'options' => array(
-                            array(
-                                'key' => 'payolution',
-                                'value' => 'payolution'
-                            ),
-                            array('key' => 'ratepay', 'value' => 'RatePay'),
-                        )
-                    ),
+                        'options' => 'getProvider'
+                    )
+                ,
                     array(
                         'name' => self::WCP_INSTALLMENT_ADDRESS_EQUAL,
                         'label' => $this->l('Billing/shipping address must be identical'),
@@ -676,14 +685,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             )
         );
 
-        $settings = array_merge(
-            $fields_form_settings,
-            $fields_form_payment,
-            $invoice_options,
-            $installment_options
-        );
-
-        return $settings;
+        return $fields_form_settings;
     }
 
     private function renderForm()
@@ -779,7 +781,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                             }
 
                             if (method_exists($this, $optfunc)) {
-                                $options = $this->$optfunc();
+                                $options = $this->$optfunc($f['name']);
                             }
 
                             $elem['options'] = array(
@@ -853,7 +855,28 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         $values = array();
         foreach ($this->getAllConfigurationParameter() as $parameter) {
-            $values[$parameter] = Tools::getValue($parameter, Configuration::get($parameter));
+            $val = Configuration::get($parameter['name']);
+
+            foreach ($this->config as $groupKey => $group) {
+                foreach ($group['fields'] as $f) {
+                    $params[] = $f['name'];
+                }
+            }
+            if (isset($parameter['multiple']) && $parameter['multiple']) {
+                if (!is_array($val)) {
+                    $val = Tools::strlen($val) ? (json_decode($val) != null) ? json_decode($val) : $val : array();
+                }
+
+                if (is_array($val)) {
+                    $x = array();
+                    foreach ($val as $v) {
+                        $x[$v] = $v;
+                    }
+                }
+                $values[$parameter['name'] . '[]'] = $val;
+            } else {
+                $values[$parameter['name']] = $val;
+            }
         }
         return $values;
     }
@@ -1345,7 +1368,7 @@ class WirecardCEECheckoutPage extends PaymentModule
 
         foreach($this->config as $groupKey => $group){
             foreach($group['fields'] as $f){
-               $params[] = $f['name'];
+               $params[] = $f;
             }
         }
         return $params;
