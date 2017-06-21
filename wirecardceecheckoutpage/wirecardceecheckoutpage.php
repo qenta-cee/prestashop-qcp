@@ -117,11 +117,21 @@ class WirecardCEECheckoutPage extends PaymentModule
     
     public function log($text)
     {
-        file_put_contents(
-            _PS_ROOT_DIR_ . DIRECTORY_SEPARATOR . 'log' . DIRECTORY_SEPARATOR . 'WirecardCheckoutPage.log',
-            $text . "\r\n",
-            FILE_APPEND | LOCK_EX
-        );
+        $log = new PrestaShopLogger();
+        $log->severity = 1;
+        $log->error_code = null;
+        $log->message = $text;
+        $log->date_add = date('Y-m-d H:i:s');
+        $log->date_upd = date('Y-m-d H:i:s');
+
+        if (isset(Context::getContext()->employee) && Validate::isLoadedObject(Context::getContext()->employee)) {
+            $id_employee = Context::getContext()->employee->id;
+        }
+        if ($id_employee !== null) {
+            $log->id_employee = (int)$id_employee;
+        }
+
+        $log->add();
     }
 
     public function __construct()
