@@ -124,6 +124,8 @@ class WirecardCEECheckoutPage extends PaymentModule
         $log->date_add = date('Y-m-d H:i:s');
         $log->date_upd = date('Y-m-d H:i:s');
 
+        $id_employee = null;
+
         if (isset(Context::getContext()->employee) && Validate::isLoadedObject(Context::getContext()->employee)) {
             $id_employee = Context::getContext()->employee->id;
         }
