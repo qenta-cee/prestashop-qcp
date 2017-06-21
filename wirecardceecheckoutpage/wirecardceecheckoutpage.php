@@ -1056,6 +1056,47 @@ class WirecardCEECheckoutPage extends PaymentModule
         );
     }
 
+    /**
+     * build basket
+     *
+     * @param Cart $cart
+     *
+     * @return WirecardCEE_Stdlib_Basket
+     */
+    public function getBasket(Cart $cart)
+    {
+        $basket = new WirecardCEE_Stdlib_Basket();
+
+        foreach ($cart->getProducts() as $product) {
+            $item = new WirecardCEE_Stdlib_Basket_Item($product['reference']);
+            $item->setUnitGrossAmount(number_format($product['price_wt'], 2, '.', ''))
+                ->setUnitNetAmount(number_format($product['price'], 2, '.', ''))
+                ->setUnitTaxAmount(number_format($product['price_wt'] - $product['price'], 2, '.', ''))
+                ->setUnitTaxRate($product['rate'])
+                ->setDescription(Tools::substr(strip_tags($product['description_short']), 0, 127))
+                ->setName(Tools::substr($product['name'], 0, 127))
+                ->setImageUrl(
+                    $this->context->link->getImageLink($product['link_rewrite'], $product['id_image'])
+                );
+
+            $basket->addItem($item, $product['cart_quantity']);
+        }
+
+        if ($cart->getTotalShippingCost(null, true) > 0) {
+            $item = new WirecardCEE_Stdlib_Basket_Item('shipping');
+            $item->setDescription('Shipping')
+                ->setName('Shipping')
+                ->setUnitGrossAmount($cart->getTotalShippingCost(null, true))
+                ->setUnitNetAmount($cart->getTotalShippingCost(null, false))
+                ->setUnitTaxAmount($item->getUnitGrossAmount() - $item->getUnitNetAmount())
+                ->setUnitTaxRate((($item->getUnitGrossAmount() / $item->getUnitNetAmount()) - 1) * 100);
+
+            $basket->addItem($item);
+        }
+
+        return $basket;
+    }
+
     public function initiatePayment($paymentType)
     {
         if(in_array( $paymentType, array(
@@ -1158,6 +1199,10 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setServiceUrl($this->getServiceUrl())
             ->setAutoDeposit($this->getAutoDeposit())
             ->createConsumerMerchantCrmId($customer->email);
+
+        if (Configuration::get(self::WCP_SEND_BASKET_DATA)) {
+            $init->setBasket($this->getBasket($cart));
+        }
 
         if( Tools::strlen(Tools::getValue('financialInstitution'))){
             $init->setFinancialInstitution(Tools::getValue('financialInstitution'));
