@@ -79,6 +79,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     const WCP_TRANSACTION_ID = 'WCP_TRANSACTION_ID';
     const WCP_AUTO_DEPOSIT = 'WCP_AUTO_DEPOSIT';
     const WCP_SEND_ADDITIONAL_DATA = 'WCP_SEND_ADDITIONAL_DATA';
+    const WCP_SEND_BASKET_DATA = 'WCP_SEND_BASKET_DATA';
     const WCP_USE_IFRAME = 'WCP_USE_IFRAME';
     const WCP_OS_AWAITING = 'WCP_OS_AWAITING';
 
@@ -527,6 +528,16 @@ class WirecardCEECheckoutPage extends PaymentModule
                     ),
                     array(
                         'type' => $radio_type,
+                        'label' => $this->l('Forward basket data'),
+                        'name' => self::WCP_SEND_BASKET_DATA,
+                        'is_bool' => true,
+                        'class' => 't',
+                        'default' => 0,
+                        'values' => $radio_options,
+                        'desc' => $this->l('Forwarding basket data about your consumer to the respective financial service provider.')
+                    ),
+                    array(
+                        'type' => $radio_type,
                         'label' => $this->l('Display as iframe'),
                         'name' => self::WCP_USE_IFRAME,
                         'default' => 1,
@@ -925,7 +936,13 @@ class WirecardCEECheckoutPage extends PaymentModule
                 array('paymentType' => $current_method),
                 true);
             $template = "module:wirecardceecheckoutpage/views/templates/hook/methods/" . strtolower($current_method) . ".tpl";
-            $payment_class = new Wirecard_CEE_QPay_PaymentType($current_method);
+            $payment_class = new WirecardCEE_QPay_PaymentType($current_method);
+
+            $consent_message = sprintf(
+                $this->l("I agree that the data which are necessary for the liquidation of invoice payments and which are used to complete the identity and credit check are transmitted to payolution.  My %s can be revoked at any time with future effect."),
+                ((Tools::strlen(Configuration::get(self::WCP_PAYOLUTION_MID)))
+                    ? '<a href="https://payment.payolution.com/payolution-payment/infoport/dataprivacyconsent?mId=' . base64_encode(Configuration::get(self::WCP_PAYOLUTION_MID)) . '" target="_blank">' . $this->l('consent') . '</a>'
+                    : $this->l('consent')));
 
             if ($this->context->smarty->templateExists($template)) {
                 $this->context->smarty->assign(
@@ -939,8 +956,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         "min_age_message" => $this->l("You have to be 18 years or older to use this payment."),
                         "show_birthdate" => $age < 18,
                         "consent_error_message" => $this->l("Please accept the consent terms!"),
-                        "consent_text" => $this->l("I agree that the data which are necessary for the liquidation of invoice payments and which are used to complete the identity and credit check are transmitted to payolution.  My %s can be revoked at any time with future effect."),
-                        "consent" => $this->l("consent"),
+                        "consent_text" => $consent_message,
                         "submit_text" => $this->l('Pay using') . ' ' . $this->l($paymentType['title']),
                         "has_consent" => Configuration::get(self::WCP_PAYOLUTION_TERMS)
                             && (($current_method == Wirecard_CEE_QPay_PaymentType::INVOICE && Configuration::get(self::WCP_INVOICE_PROVIDER) == 'payolution') || ($current_method === Wirecard_CEE_QPay_PaymentType::INSTALLMENT && Configuration::get(self::WCP_INSTALLMENT_PROVIDER) == 'payolution'))
@@ -1202,7 +1218,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $consumerData->addAddressInformation($billingAddress)
             ->addAddressInformation($shippingAddress);
 
-        $customer = new Customer($this->getOrder()->id_customer);
+        $customer = new Customer($this->context->customer->id);
         $consumerData->setBirthDate($customer->birthday)
             ->setEmail($customer->email);
 
@@ -1533,7 +1549,6 @@ class WirecardCEECheckoutPage extends PaymentModule
             return false;
         }
 
-        $customer = new Customer($cart->id_customer);
         $billingAddress = new Address($cart->id_address_invoice);
         $shippingAddress = new Address($cart->id_address_delivery);
 
@@ -1549,10 +1564,6 @@ class WirecardCEECheckoutPage extends PaymentModule
             return false;
         }
 
-        $d1 = new DateTime($customer->birthday);
-        $diff = $d1->diff(new DateTime);
-        $customerAge = $diff->format('%y');
-
         $total = $cart->getOrderTotal();
 
         if ($billingAddress->id != $shippingAddress->id) {
@@ -1562,10 +1573,6 @@ class WirecardCEECheckoutPage extends PaymentModule
                     return false;
                 }
             }
-        }
-
-        if ($customerAge < Wirecard_CEE_QPay_PaymentType::INVOICE_INSTALLMENT_MIN_AGE) {
-            return false;
         }
 
         if ($this->getInvoiceMin() && $this->getInvoiceMin() > $total) {
@@ -1590,8 +1597,6 @@ class WirecardCEECheckoutPage extends PaymentModule
             return false;
         }
 
-        $customer = new Customer($cart->id_customer);
-
         $billingAddress = new Address($cart->id_address_invoice);
         $shippingAddress = new Address($cart->id_address_delivery);
 
@@ -1609,10 +1614,6 @@ class WirecardCEECheckoutPage extends PaymentModule
             return false;
         }
 
-        $d1 = new DateTime($customer->birthday);
-        $diff = $d1->diff(new DateTime());
-        $customerAge = $diff->format('%y');
-
         $total = $cart->getOrderTotal();
 
         if ($billingAddress->id != $shippingAddress->id) {
@@ -1622,10 +1623,6 @@ class WirecardCEECheckoutPage extends PaymentModule
                     return false;
                 }
             }
-        }
-
-        if ($customerAge < Wirecard_CEE_QPay_PaymentType::INVOICE_INSTALLMENT_MIN_AGE) {
-            return false;
         }
 
         if ($this->getInstallmentMin() && $this->getInstallmentMin() > $total) {
@@ -1754,6 +1751,21 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         $current_currency = new Currency($this->getOrder()->id_currency);
         return $current_currency->iso_code;
+    }
+
+    /**
+     * return config data as needed by the client library
+     *
+     * @return array
+     */
+    public function getConfigArray()
+    {
+        $cfg = array('LANGUAGE' => $this->getLanguage());
+        $cfg['CUSTOMER_ID'] = $this->getCustomerId();
+        $cfg['SHOP_ID'] = $this->getShopId();
+        $cfg['SECRET'] = $this->getSecret();
+
+        return $cfg;
     }
 
     private function getLanguage()
