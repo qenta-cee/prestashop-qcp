@@ -4,14 +4,16 @@
 
     {if $show_birthdate}
         <div class="required form-group">
-            <label class="required"> {l s='Date of Birth' mod='wirecardceecheckoutseamless'}</label>
+            <label class="required"> {l s='Date of Birth' mod='wirecardceecheckoutpage'}</label>
             <div class="row">
                 <input type="hidden" name="birthdate" id="wcp{$method|escape:'htmlall':'UTF-8'}birthdate" data-wcp-fieldname="birthdate"/>
                 <div class="col-sm-2">
                     <select name="days" id="wcp{$method|escape:'htmlall':'UTF-8'}day" class="form-control days">
                         <option value="">-</option>
                         {foreach from=$days item=v}
-                            <option value="{$v|escape:'htmlall':'UTF-8'}" {if ($sl_day == $v)}selected="selected"{/if}>{$v|escape:'htmlall':'UTF-8'}&nbsp;&nbsp;</option>
+                            <option value="{$v|escape:'htmlall':'UTF-8'}" >
+                                {$v|escape:'htmlall':'UTF-8'}&nbsp;&nbsp;
+                            </option>
                         {/foreach}
                     </select>
                 </div>
@@ -19,8 +21,8 @@
                     <select name="months" id="wcp{$method|escape:'htmlall':'UTF-8'}month" class="form-control months">
                         <option value="">-</option>
                         {foreach from=$months key=k item=v}
-                            <option value="{$k|escape:'htmlall':'UTF-8'}" {if ($sl_month == $k)}selected="selected"{/if}>
-                                {l s=$v mod='wirecardceecheckoutseamless'}&nbsp;
+                            <option value="{$k|escape:'htmlall':'UTF-8'}">
+                                {l s=$v mod='wirecardceecheckoutpage'}&nbsp;
                             </option>
                         {/foreach}
                     </select>
@@ -29,7 +31,9 @@
                     <select name="years" id="wcp{$method|escape:'htmlall':'UTF-8'}year" class="form-control years">
                         <option value="">-</option>
                         {foreach from=$years item=v}
-                            <option value="{$v|escape:'htmlall':'UTF-8'}" {if ($sl_year == $v)}selected="selected"{/if}>{$v|escape:'htmlall':'UTF-8'}&nbsp;&nbsp;</option>
+                            <option value="{$v|escape:'htmlall':'UTF-8'}">
+                                {$v|escape:'htmlall':'UTF-8'}&nbsp;&nbsp;
+                            </option>
                         {/foreach}
                     </select>
                 </div>
