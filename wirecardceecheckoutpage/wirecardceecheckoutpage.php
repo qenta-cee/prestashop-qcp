@@ -1284,31 +1284,30 @@ class WirecardCEECheckoutPage extends PaymentModule
         if (!$this->active) {
             return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString($this->l("Module is not active!"));
         }
-        
-        $response = $_POST ? $_POST : array();
-        $this->log(__METHOD__ . ':' . print_r($response, true));
 
-        $secret = $this->getSecret();
+        $response = Tools::file_get_contents('php://input');
+        $this->log(__METHOD__ . ':raw:' . $response);
+
         try {
-            $responseHandler = WirecardCEE_QPay_ReturnFactory::getInstance($response, $secret);
-            $status = $responseHandler->validate();
+            $return = WirecardCEE_QPay_ReturnFactory::getInstance($response, $this->getSecret());
+            $status = $return->validate();
 
             switch ($status) {
                 case WirecardCEE_QPay_ReturnFactory::STATE_SUCCESS:
                     $orderState = _PS_OS_PAYMENT_;
                     //create message with returned Parameters.
-                    $this->saveReturnedFields($response);
-                    $this->updatePaymentInformation($response['psOrderNumber'], $response['paymentType'], $response[$this->getTransactionId()]);
+                    $this->saveReturnedFields($return);
+                    $this->updatePaymentInformation($return->getReturned()['psOrderNumber'], $return->getReturned()['paymentType'], $return->getReturned()[$this->getTransactionId()]);
                     break;
                 case WirecardCEE_QPay_ReturnFactory::STATE_CANCEL:
                     $orderState = _PS_OS_CANCELED_;
                     break;
                 case WirecardCEE_QPay_ReturnFactory::STATE_FAILURE:
-                    $this->saveReturnedFields($response);
+                    $this->saveReturnedFields($return);
                     $orderState = _PS_OS_ERROR_;
                     break;
                 case WirecardCEE_QPay_ReturnFactory::STATE_PENDING:
-                    $this->saveReturnedFields($response);
+                    $this->saveReturnedFields($return);
                     $orderState = $this->getAwaitingState();
                     break;
                 default:
@@ -1319,8 +1318,8 @@ class WirecardCEECheckoutPage extends PaymentModule
             $this->setOrderState($orderState);
         } catch (WirecardCEE_Stdlib_Validate_Exception $e) {
             $this->log(__METHOD__ . ':' . $e->getMessage());
-            if (isset($response['psOrderNumber'])) {
-                $this->setOrder($response['psOrderNumber']);
+            if (isset($response->psOrderNumber)) {
+                $this->setOrder($response->psOrderNumber);
                 $this->setOrderState(_PS_OS_ERROR_);
             }
             return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString($e->getMessage());
@@ -1377,10 +1376,13 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $this->display(__FILE__, 'breakout_iframe.tpl');
     }
 
-    private function saveReturnedFields($response)
+    private function saveReturnedFields(WirecardCEE_Stdlib_Return_ReturnAbstract $response)
     {
         $msg = new Message();
         $message = '';
+
+        $response = $response->getReturned();
+
         foreach ($response as $key => $value) {
             switch ($key) {
                 case 'psOrderNumber':
