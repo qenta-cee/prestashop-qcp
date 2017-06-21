@@ -14,19 +14,16 @@ $(document).ready(function(){
             });
         });
     }
-
-    function wcpValidateMinAge(dob, minage) {
-        if (!minage)
-            return true;
-
-        var birthdate = new Date(dob);
-        var year = birthdate.getFullYear();
-        var today = new Date();
-        if (year <= 1899 || year >= today.getFullYear() + 1) {
-            return false;
-        }
-
-        var limit = new Date((today.getFullYear() - minage), today.getMonth(), today.getDate());
-        return birthdate < limit;
-    };
 });
+
+function wcpValidateMinAge(dob) {
+    var birthdate = new Date(dob);
+    var year = birthdate.getFullYear();
+    var today = new Date();
+    if (year <= 1899 || year >= today.getFullYear() + 1) {
+        return false;
+    }
+
+    var limit = new Date((today.getFullYear() - 18), today.getMonth(), today.getDate());
+    return birthdate < limit;
+};
