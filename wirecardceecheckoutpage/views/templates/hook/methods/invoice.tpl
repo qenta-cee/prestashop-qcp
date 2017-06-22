@@ -51,7 +51,7 @@
                     </span>
                 </div>
                 <div class="condition-label">
-                    <label class="js-terms" for="wcp{$method|escape:'htmlall':'UTF-8'}consent">
+                    <label for="wcp{$method|escape:'htmlall':'UTF-8'}consent">
                         {$consent_text nofilter}
                     </label>
                 </div>
@@ -72,17 +72,16 @@
     wcp{$method|escape:'htmlall':'UTF-8'}Validate = function () {
         messageBox = $('div.alert.alert-danger');
         messageBox.html("").parent().hide();
+        var msg = '';
 
+        {if $show_birthdate}
         var m = $('#wcp{$method|escape:'htmlall':'UTF-8'}month').val();
         if (m < 10) m = "0" + m;
         var d = $('#wcp{$method|escape:'htmlall':'UTF-8'}day').val();
         if (d < 10) d = "0" + d;
 
         var dateStr = $('#wcp{$method|escape:'htmlall':'UTF-8'}year').val() + '-' + m + '-' + d;
-        var minAge = 18;
-        var msg = '';
 
-        {if $show_birthdate}
         if (!wcpValidateMinAge(dateStr)) {
             {* escape was causing encoding issues *}
             msg = '{$min_age_message nofilter}';

@@ -405,7 +405,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         if($which==self::WCP_INVOICE_PROVIDER){
             $ret[] = array(
                 'key' => 'wirecard',
-                'value' => 'virecard'
+                'value' => 'wirecard'
             );
         }
 
@@ -485,7 +485,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'label' => $this->l('Text on payment page'),
                         'name' => self::WCP_DISPLAY_TEXT,
                         'class' => 'fixed-width-xl',
-                        'required' => true,
+                        'required' => false,
                         'default' => '',
                         'desc' => $this->l('Text displayed during the payment process, i.e. "Thank you for ordering in xy-shop".').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#displaytext">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
@@ -495,7 +495,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'name' => self::WCP_MAX_RETRIES,
                         'class' => 'fixed-width-xs',
                         'default' => '-1',
-                        'required' => true,
+                        'required' => false,
                         'desc' => $this->l('Maximum number of payment attempts regarding a certain order.').' <a target="_blank" href="https://guides.wirecard.at/request_parameters#maxretries">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
@@ -566,7 +566,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                 'fields' => $paymentTypeSwitches
             ),
             'invoiceoptions' => array(
-                'tab' => $this->l('Invoice'),
+                'tab' => $this->l('Invoice', 'wirecardwpcbackend'),
                 'fields' => array(
                     array(
                         'name' => self::WCP_INVOICE_PROVIDER,
@@ -619,7 +619,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                         'type' => 'text',
                         'group' => 'pt',
                         'validator' => 'numeric',
-                        'default' => 150,
+                        'default' => 10,
                         'cssclass' => 'fixed-width-md',
                         'suffix' => 'EUR'
                     ),
@@ -1104,26 +1104,34 @@ class WirecardCEECheckoutPage extends PaymentModule
             WirecardCEE_QMore_PaymentType::INVOICE
         ))){
             $keys_to_check = array('years','months','days');
-            if(count(array_intersect(array_flip(Tools::getAllValues()), $keys_to_check)) < count($keys_to_check)){
+
+            /** @var int $age - age from customer object */
+            $customer = new Customer($this->context->customer->id);
+            $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d",$customer->birthday))->y;
+
+            if($age < 18 && count(array_intersect(array_flip(Tools::getAllValues()), $keys_to_check)) < count($keys_to_check)){
                 // redirect back because some params are missing
                 Tools::redirect(
                     $this->context->link->getPageLink('order',true,$this->context->language->id), array("submitReorder" => true)
                 );
                 die();
+            } else {
+                $birthdate = new DateTime();
+                $birthdate->setDate(Tools::getValue('years'),Tools::getValue('months'),Tools::getValue('days'));
+                /** @var int $age - age from dropdowns in payment form */
+                $age = (new DateTime())->diff($birthdate)->y;
+
+                if( $age < 18 ){
+                    $this->context->cookie->wcpMessage = $this->l("You have to be 18 years or older to use this payment.");
+
+                    Tools::redirect(
+                        $this->context->link->getPageLink('order',true,$this->context->language->id), array("submitReorder" => true)
+                    );
+                    die();
+                }
             }
 
-            $birthdate = new DateTime();
-            $birthdate->setDate(Tools::getValue('years'),Tools::getValue('months'),Tools::getValue('days'));
-            $age = (new DateTime())->diff($birthdate)->y;
 
-            if( $age < 18 ){
-                $this->context->cookie->wcpMessage = $this->l("You have to be 18 years or older to use this payment.");
-
-                Tools::redirect(
-                    $this->context->link->getPageLink('order',true,$this->context->language->id), array("submitReorder" => true)
-                );
-                die();
-            }
         }
 
         if (!$this->context->cookie->qpayRedirectUrl) {
@@ -1198,7 +1206,16 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setFailureUrl($this->getReturnUrl())
             ->setServiceUrl($this->getServiceUrl())
             ->setAutoDeposit($this->getAutoDeposit())
+            ->setCustomerStatement($this->getCustomerStatement())
             ->createConsumerMerchantCrmId($customer->email);
+
+        if(Tools::strlen(Configuration::get(self::WCP_DISPLAY_TEXT))){
+            $init->setDisplayText(Configuration::get(self::WCP_DISPLAY_TEXT));
+        }
+
+        if(Tools::strlen(Configuration::get(self::WCP_MAX_RETRIES))){
+            $init->setMaxRetries(Configuration::get(self::WCP_MAX_RETRIES));
+        }
 
         if (Configuration::get(self::WCP_SEND_BASKET_DATA)) {
             $init->setBasket($this->getBasket($cart));
@@ -1314,7 +1331,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                     return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString('Invalid uncaught paymentState. Should not happen.');
             }
 
-            $this->setOrder($response['psOrderNumber']);
+            $this->setOrder($return->getReturned()['psOrderNumber']);
             $this->setOrderState($orderState);
         } catch (WirecardCEE_Stdlib_Validate_Exception $e) {
             $this->log(__METHOD__ . ':' . $e->getMessage());
@@ -1733,11 +1750,6 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $secretArray[Configuration::get(self::WCP_CONFIGURATION_MODE)];
     }
 
-    private function getMaxRetries()
-    {
-        return Configuration::get(self::WCP_MAX_RETRIES);
-    }
-
     private function getInvoiceMin()
     {
         return Configuration::get(self::WCP_INVOICE_MIN);
@@ -1855,8 +1867,11 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     private function getCustomerStatement()
     {
-        $orderNumber = sprintf(' #%06s', $this->getOrder()->id);
-        return Configuration::get('PS_SHOP_NAME') . $orderNumber;
+        return sprintf(
+            "%s %s",
+            Configuration::get('PS_SHOP_NAME'),
+            $this->getOrderReference()
+        );
     }
 
     private function getDuplicateRequestCheck()
