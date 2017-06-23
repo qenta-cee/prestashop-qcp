@@ -1217,7 +1217,10 @@ class WirecardCEECheckoutPage extends PaymentModule
             $init->setMaxRetries(Configuration::get(self::WCP_MAX_RETRIES));
         }
 
-        if (Configuration::get(self::WCP_SEND_BASKET_DATA)) {
+        if (Configuration::get(self::WCP_SEND_BASKET_DATA)
+                || ($paymentType == WirecardCEE_QMore_PaymentType::INSTALLMENT && Configuration::get(self::WCP_INSTALLMENT_PROVIDER) == 'ratepay')
+                || ($paymentType == WirecardCEE_QMore_PaymentType::INVOICE && Configuration::get(self::WCP_INVOICE_PROVIDER) == 'ratepay')
+        ) {
             $init->setBasket($this->getBasket($cart));
         }
 
