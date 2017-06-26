@@ -36,7 +36,7 @@
 				<div class="col-xs-12">
 
 					{if isset($nbProducts) && $nbProducts <= 0}
-						<p class="alert alert-warning">{l s='Your shopping cart is empty.' mod='wirecardceecheckoutseamless'}</p>
+						<p class="alert alert-warning">{l s='Your shopping cart is empty.' mod='wirecardceecheckoutpage'}</p>
 					{else}
 						<iframe width="100%" height="640px" frameborder="0" name="{$windowName}" src="{$redirectUrl}"></iframe>
 					{/if}

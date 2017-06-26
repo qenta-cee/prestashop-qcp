@@ -37,7 +37,7 @@ if (!defined('_PS_VERSION_')) {
 function upgrade_module_1_4_0($object)
 {
     Db::getInstance()->execute(
-        'DELETE FROM `'._DB_PREFIX_.'configuration` WHERE name="WCP_PT_C2P";'
+        'DELETE FROM `'._DB_PREFIX_.'configuration` WHERE name="WCP_PT_C2P" OR name="WCP_PT_MPASS" OR name="WCP_PT_SKRILLDIRECT";'
     );
     Configuration::updateValue('WCP_CONFIGURATION_MODE', 'production');
     return true;

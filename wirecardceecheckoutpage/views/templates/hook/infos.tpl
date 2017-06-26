@@ -30,8 +30,8 @@
  *}
 
 <br>
-<img src="../modules/wirecardceecheckoutpage/wirecardceecheckoutpage.png" style="float:left; margin: 10px 15px 10px 0;" width="90" height="20">
-<p><strong>{l s="Module for payment using Wirecard Checkout Page." mod='wirecardceecheckoutpage'}</strong></p>
-<p>{l s="Wirecard Checkout Page supports all popular payment methods and fulfills PCI DSS compliance." mod='wirecardceecheckoutpage'}</p>
+<img src="../modules/wirecardceecheckoutpage/views/img/wirecardceecheckoutpage.png" style="float:left; margin: 10px 15px 10px 0;" width="90" height="20">
+<p><strong>{l s='Module for payment using Wirecard Checkout Page.' mod='wirecardceecheckoutpage'}</strong></p>
+<p>{l s='Wirecard Checkout Page supports all popular payment methods and fulfills PCI DSS compliance.' mod='wirecardceecheckoutpage'}</p>
 <br>
 <br>

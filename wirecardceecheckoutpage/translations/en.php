@@ -49,6 +49,7 @@ $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_162f5b330
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_3fb20ad24cbc5a57b91a57a396679fec'] = 'Payment method not enabled.';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_27ea1853e76889e2bb5a34ba79e14d55'] = 'Payment process results could not be saved reliably. Please check the payment in the Wirecard Payment Center.';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_73a61696f100b3858511e212a3feea6b'] = 'Credit Card';
+$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_0d2ecb55b0dcb203411b067ba3905803'] = 'Masterpass';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_677c0ab38809416b6b9cf96f0d563c77'] = 'Credit Card - Mail Order and Telephone Order';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_1f2bdd630c44333f17bb08ff1b862eec'] = 'MasterCard SecureCode';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_c09143333604374dfc935b1843553604'] = 'eps Online-Überweisung';
@@ -65,14 +66,12 @@ $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_c0db4214f
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_e5532ed7b6c5ecb396dd70f0e4283f64'] = 'TrustPay';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_466eadd40b3c10580e3ab4e8061161ce'] = 'Invoice';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_459f93c30d7bc374abe95e0d8a1c66b0'] = 'Installment';
-$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_46794af42524fa65bce0ff7acdc7b753'] = 'Bancontact/Mister Cash';
+$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_870cf6bc77bbadd038aeb8d942c9cb18'] = 'Bancontact';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_b02f3d1095fbd0490caa31090d2aac19'] = 'Przelewy24';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_1badcb6bf3c9f9a61b9221344ccdc53c'] = 'moneta.ru';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_d822a505bd8d5faef8f7fd081c9517e0'] = 'POLi';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_0ff52aceaf88adbdfb1a1e628a66b6cf'] = 'eKonto';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_31797189117cf605565c9d330601cc7f'] = 'Trustly';
-$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_fc695527ce186f3a87ac588d9cc8339d'] = 'mpass';
-$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_ffe0b676beb70ae97ad71df7fa9321d1'] = 'Skrill Direct';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_1525848c624bf1a02dfce01c9e8145cf'] = 'Skrill Digital Wallet';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_a38734e15f454bd7fb7546a29f19a3cc'] = 'My Voucher';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_ccf55b98ae88096af98ec961d64b489b'] = 'The consumer may select one of the activated payment methods directly in Wirecard Checkout Page.';
