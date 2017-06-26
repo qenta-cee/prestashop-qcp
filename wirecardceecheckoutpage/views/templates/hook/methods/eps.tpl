@@ -1,4 +1,4 @@
-<form action="{$action}">
+<form action="{$action|escape:'htmlall':'UTF-8'}">
     <input type="hidden" name="paymentType" value="{$method|escape:'htmlall':'UTF-8'}">
     <div class="required form-group">
         <label class="required"> {l s='Financial institution' mod='wirecardceecheckoutpage'}</label>

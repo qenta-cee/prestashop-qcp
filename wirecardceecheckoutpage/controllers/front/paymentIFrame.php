@@ -44,8 +44,6 @@ class WirecardCEECheckoutPagePaymentIFrameModuleFrontController extends ModuleFr
         $this->display_column_left = false;
         parent::initContent();
 
-        $cart = $this->context->cart;
-
         $this->context->smarty->assign(array(
             'redirectUrl' => $this->context->cookie->qpayRedirectUrl,
             'windowName' => $this->module->getWindowName()

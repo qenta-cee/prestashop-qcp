@@ -1,4 +1,5 @@
-{*
+<?php
+/*
  * Shop System Plugins - Terms of Use
  *
  * The plugins offered are provided free of charge by Wirecard Central Eastern Europe GmbH 
@@ -27,11 +28,14 @@
  *
  * By installing the plugin into the shop system the customer agrees to these terms of use.
  * Please do not use the plugin if you do not agree to these terms of use!
- *}
-
-<br>
-<img src="../modules/wirecardceecheckoutpage/views/img/wirecardceecheckoutpage.png" style="float:left; margin: 10px 15px 10px 0;" width="90" height="20">
-<p><strong>{l s='Module for payment using Wirecard Checkout Page.' mod='wirecardceecheckoutpage'}</strong></p>
-<p>{l s='Wirecard Checkout Page supports all popular payment methods and fulfills PCI DSS compliance.' mod='wirecardceecheckoutpage'}</p>
-<br>
-<br>
+ */
+                        
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
+                        
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+                        
+header("Location: ../");
+exit;

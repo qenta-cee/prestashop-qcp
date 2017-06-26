@@ -36,7 +36,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'library');
+ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . realpath(dirname(__FILE__))
+    . DIRECTORY_SEPARATOR . 'library');
 
 require_once "library/wirecardcee_autoload.php";
 
@@ -175,8 +176,10 @@ class WirecardCEECheckoutPage extends PaymentModule
                 if (is_array($default)) {
                     $default = json_encode($default);
                 }
-                if (!Configuration::updateGlobalValue($parameter['name'],
-                    $default)
+                if (!Configuration::updateGlobalValue(
+                    $parameter['name'],
+                    $default
+                )
                 ) {
                     return false;
                 }
@@ -192,7 +195,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             $orderState = new OrderState();
             $orderState->name = array();
             foreach (Language::getLanguages() as $language) {
-                if (strtolower($language['iso_code']) == 'de') {
+                if (Tools::strtolower($language['iso_code']) == 'de') {
                     $orderState->name[$language['id_lang']] = 'Checkout Page Bezahlung ausständig';
                 } else {
                     $orderState->name[$language['id_lang']] = 'Checkout Page payment awaiting';
@@ -206,7 +209,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             $orderState->invoice = false;
             if ($orderState->add()) {
                 copy(
-                    dirname(__FILE__) . '/img/awaiting_payment.gif',
+                    dirname(__FILE__) . '/views/img/awaiting_payment.gif',
                     dirname(__FILE__) . '/../../img/os/' . (int)($orderState->id) . '.gif'
                 );
             }
@@ -215,25 +218,26 @@ class WirecardCEECheckoutPage extends PaymentModule
         return true;
     }
 
-    public function hookActionFrontControllerSetMedia($params){
+    public function hookActionFrontControllerSetMedia($params)
+    {
 
         $controllerArray = array('order');
         if (in_array($this->context->controller->php_self, $controllerArray)) {
             $this->context->controller->registerStylesheet(
                 'module-' . $this->name . '-style',
-                'modules/' . $this->name . '/css/style.css',
-                [
+                'modules/' . $this->name . '/views/css/style.css',
+                array(
                     'media' => 'all',
                     'priority' => 200,
-                ]
+                )
             );
             $this->context->controller->registerJavascript(
                 'module-' . $this->name . '-script',
-                'modules/' . $this->name . '/scripts/script.js',
-                [
+                'modules/' . $this->name . '/views/js/script.js',
+                array(
                     'media' => 'all',
                     'priority' => 200,
-                ]
+                )
             );
         }
     }
@@ -390,7 +394,8 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $ret;
     }
 
-    protected function getProvider($which){
+    protected function getProvider($which)
+    {
         $ret = array(
             array(
                 'key' => 'payolution',
@@ -402,7 +407,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             )
         );
 
-        if($which==self::WCP_INVOICE_PROVIDER){
+        if ($which==self::WCP_INVOICE_PROVIDER) {
             $ret[] = array(
                 'key' => 'wirecard',
                 'value' => 'wirecard'
@@ -880,11 +885,6 @@ class WirecardCEECheckoutPage extends PaymentModule
         foreach ($this->getAllConfigurationParameter() as $parameter) {
             $val = Configuration::get($parameter['name']);
 
-            foreach ($this->config as $groupKey => $group) {
-                foreach ($group['fields'] as $f) {
-                    $params[] = $f['name'];
-                }
-            }
             if (isset($parameter['multiple']) && $parameter['multiple']) {
                 if (!is_array($val)) {
                     $val = Tools::strlen($val) ? (json_decode($val) != null) ? json_decode($val) : $val : array();
@@ -912,7 +912,7 @@ class WirecardCEECheckoutPage extends PaymentModule
 
         $customer_id = $params['cookie']->id_customer;
         $customer = new Customer($customer_id);
-        $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d",$customer->birthday))->y;
+        $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
 
         $result = array();
 
@@ -920,29 +920,31 @@ class WirecardCEECheckoutPage extends PaymentModule
         $paymentTypes = $this->getEnabledPaymentTypes($params['cart']);
 
         $logo = function ($payment_type) {
-            return ".." . Media::getMediaPath('/modules/wirecardceecheckoutpage/img/payment_types/' . strtolower($payment_type) . '.png');
+            return ".." . Media::getMediaPath('/modules/wirecardceecheckoutpage/views/img/payment_types/' . Tools::strtolower($payment_type) . '.png');
         };
 
         foreach ($paymentTypes as $paymentType) {
             $payment = new PaymentOption();
 
             $current_method = $paymentType['value'];
-            $payment->setLogo($logo(strtolower($current_method)))
+            $payment->setLogo($logo(Tools::strtolower($current_method)))
                 ->setCallToActionText($this->l('Pay using') . ' ' . $this->l($paymentType['title']));
 
             $action = $this->context->link->getModuleLink(
                 $this->name,
                 'payment',
                 array('paymentType' => $current_method),
-                true);
-            $template = "module:wirecardceecheckoutpage/views/templates/hook/methods/" . strtolower($current_method) . ".tpl";
+                true
+            );
+            $template = "module:wirecardceecheckoutpage/views/templates/hook/methods/" . Tools::strtolower($current_method) . ".tpl";
             $payment_class = new WirecardCEE_QPay_PaymentType($current_method);
 
             $consent_message = sprintf(
                 $this->l("I agree that the data which are necessary for the liquidation of invoice payments and which are used to complete the identity and credit check are transmitted to payolution.  My %s can be revoked at any time with future effect."),
                 ((Tools::strlen(Configuration::get(self::WCP_PAYOLUTION_MID)))
                     ? '<a href="https://payment.payolution.com/payolution-payment/infoport/dataprivacyconsent?mId=' . base64_encode(Configuration::get(self::WCP_PAYOLUTION_MID)) . '" target="_blank">' . $this->l('consent') . '</a>'
-                    : $this->l('consent')));
+                    : $this->l('consent'))
+            );
 
             if ($this->context->smarty->templateExists($template)) {
                 $this->context->smarty->assign(
@@ -984,7 +986,6 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->setOrder((int)Tools::getValue('psOrderNumber'));
         unset($this->context->cookie->qpayRedirectUrl);
 
-        $info = $this->getPaymentTypeInfo('WCP_PT_' . Tools::getValue('paymentType'));
         if ($this->getOrder()->hasBeenPaid() || Tools::getValue('paymentState') == WirecardCEE_QPay_ReturnFactory::STATE_SUCCESS) {
             $this->smarty->assign(array(
                 'status' => 'ok'
@@ -1099,46 +1100,47 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     public function initiatePayment($paymentType)
     {
-        if(in_array( $paymentType, array(
+        if (in_array($paymentType, array(
             WirecardCEE_QMore_PaymentType::INSTALLMENT,
             WirecardCEE_QMore_PaymentType::INVOICE
-        ))){
+        ))) {
             $keys_to_check = array('years','months','days');
 
             /** @var int $age - age from customer object */
             $customer = new Customer($this->context->customer->id);
-            $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d",$customer->birthday))->y;
+            $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
 
-            if($age < 18 && count(array_intersect(array_flip(Tools::getAllValues()), $keys_to_check)) < count($keys_to_check)){
+            if ($age < 18 && count(array_intersect(array_flip(Tools::getAllValues()), $keys_to_check)) < count($keys_to_check)) {
                 // redirect back because some params are missing
                 Tools::redirect(
-                    $this->context->link->getPageLink('order',true,$this->context->language->id), array("submitReorder" => true)
+                    $this->context->link->getPageLink('order', true, $this->context->language->id),
+                    array("submitReorder" => true)
                 );
                 die();
             } else {
                 $birthdate = new DateTime();
-                $birthdate->setDate(Tools::getValue('years'),Tools::getValue('months'),Tools::getValue('days'));
+                $birthdate->setDate(Tools::getValue('years'), Tools::getValue('months'), Tools::getValue('days'));
                 /** @var int $age - age from dropdowns in payment form */
                 $age = (new DateTime())->diff($birthdate)->y;
 
-                if( $age < 18 ){
+                if ($age < 18) {
                     $this->context->cookie->wcpMessage = $this->l("You have to be 18 years or older to use this payment.");
 
                     Tools::redirect(
-                        $this->context->link->getPageLink('order',true,$this->context->language->id), array("submitReorder" => true)
+                        $this->context->link->getPageLink('order', true, $this->context->language->id),
+                        array("submitReorder" => true)
                     );
                     die();
                 }
             }
-
-
         }
 
         if (!$this->context->cookie->qpayRedirectUrl) {
             if (!$this->context->cookie->id_cart) {
                 $this->context->cookie->wcpMessage = $this->l('Unable to load cart.');
                 Tools::redirect(
-                    $this->context->link->getPageLink('order',true,$this->context->language->id), array("submitReorder" => true)
+                    $this->context->link->getPageLink('order', true, $this->context->language->id),
+                    array("submitReorder" => true)
                 );
                 die();
             }
@@ -1209,26 +1211,31 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setCustomerStatement($this->getCustomerStatement())
             ->createConsumerMerchantCrmId($customer->email);
 
-        if(Tools::strlen(Configuration::get(self::WCP_DISPLAY_TEXT))){
+        if (Tools::strlen(Configuration::get(self::WCP_DISPLAY_TEXT))) {
             $init->setDisplayText(Configuration::get(self::WCP_DISPLAY_TEXT));
         }
 
-        if(Tools::strlen(Configuration::get(self::WCP_MAX_RETRIES))){
+        if (Tools::strlen(Configuration::get(self::WCP_MAX_RETRIES))) {
             $init->setMaxRetries(Configuration::get(self::WCP_MAX_RETRIES));
         }
 
+
         if (Configuration::get(self::WCP_SEND_BASKET_DATA)
-                || ($paymentType == WirecardCEE_QMore_PaymentType::INSTALLMENT && Configuration::get(self::WCP_INSTALLMENT_PROVIDER) == 'ratepay')
-                || ($paymentType == WirecardCEE_QMore_PaymentType::INVOICE && Configuration::get(self::WCP_INVOICE_PROVIDER) == 'ratepay')
+            || ($paymentType == WirecardCEE_QPay_PaymentType::INSTALLMENT && Configuration::get(self::WCP_INSTALLMENT_PROVIDER) == 'ratepay')
+            || ($paymentType == WirecardCEE_QPay_PaymentType::INVOICE && (Configuration::get(self::WCP_INVOICE_PROVIDER) == 'ratepay' || Configuration::get(self::WCP_INVOICE_PROVIDER) == 'wirecard'))
         ) {
             $init->setBasket($this->getBasket($cart));
         }
 
-        if( Tools::strlen(Tools::getValue('financialInstitution'))){
-            $init->setFinancialInstitution(Tools::getValue('financialInstitution'));
+        if ($paymentType == WirecardCEE_QPay_PaymentType::INVOICE) {
+            $init->setFinancialInstitution(Configuration::get(self::WCP_INVOICE_PROVIDER));
         }
 
-        if($paymentType == WirecardCEE_QPay_PaymentType::MASTERPASS){
+        if ($paymentType == WirecardCEE_QPay_PaymentType::INSTALLMENT) {
+            $init->setFinancialInstitution(Configuration::get(self::WCP_INSTALLMENT_PROVIDER));
+        }
+
+        if ($paymentType == WirecardCEE_QPay_PaymentType::MASTERPASS) {
             $init->setShippingProfile('NO_SHIPPING');
         }
         //additionally parameters can be added easily because of the magic method __set
@@ -1291,7 +1298,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setIpAddress($this->getConsumerIpAddress());
 
         $customer = new Customer($this->getOrder()->id_customer);
-        $consumerData->setBirthDate(DateTime::createFromFormat("Y-m-d",$customer->birthday))
+        $consumerData->setBirthDate(DateTime::createFromFormat("Y-m-d", $customer->birthday))
             ->setEmail($customer->email);
 
         $request->setConsumerData($consumerData);
@@ -1465,9 +1472,9 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         $params = array();
 
-        foreach($this->config as $groupKey => $group){
-            foreach($group['fields'] as $f){
-               $params[] = $f;
+        foreach ($this->config as $group) {
+            foreach ($group['fields'] as $f) {
+                $params[] = $f;
             }
         }
         return $params;
@@ -1475,12 +1482,13 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     private function getPaymentTypes()
     {
-        return array(self::WCP_PT_CCARD, self::WCP_PT_MASTERPASS, self::WCP_PT_CCARD_MOTO, self::WCP_PT_MAESTRO, self::WCP_PT_EPS,
-            self::WCP_PT_IDL, self::WCP_PT_GIROPAY, self::WCP_PT_TATRAPAY, self::WCP_PT_SOFORTUEBERWEISUNG,
-            self::WCP_PT_PBX, self::WCP_PT_QUICK, self::WCP_PT_PAYPAL, self::WCP_PT_EPAY_BG, self::WCP_PT_SEPA_DD,
-            self::WCP_PT_TRUSTPAY, self::WCP_PT_INVOICE, self::WCP_PT_INSTALLMENT, self::WCP_PT_BANCONTACT,
-            self::WCP_PT_P24, self::WCP_PT_MONETA, self::WCP_PT_POLI, self::WCP_PT_EKONTO, self::WCP_PT_TRUSTLY,
-            self::WCP_PT_SKRILLWALLET, self::WCP_PT_VOUCHER);
+        return array(self::WCP_PT_CCARD, self::WCP_PT_MASTERPASS, self::WCP_PT_CCARD_MOTO, self::WCP_PT_MAESTRO,
+            self::WCP_PT_EPS, self::WCP_PT_IDL, self::WCP_PT_GIROPAY, self::WCP_PT_TATRAPAY,
+            self::WCP_PT_SOFORTUEBERWEISUNG, self::WCP_PT_PBX, self::WCP_PT_QUICK, self::WCP_PT_PAYPAL,
+            self::WCP_PT_EPAY_BG, self::WCP_PT_SEPA_DD, self::WCP_PT_TRUSTPAY, self::WCP_PT_INVOICE,
+            self::WCP_PT_INSTALLMENT, self::WCP_PT_BANCONTACT, self::WCP_PT_P24, self::WCP_PT_MONETA,
+            self::WCP_PT_POLI, self::WCP_PT_EKONTO, self::WCP_PT_TRUSTLY, self::WCP_PT_SKRILLWALLET,
+            self::WCP_PT_VOUCHER);
     }
 
     private function getPaymentTypeInfo($type)
@@ -1582,7 +1590,7 @@ class WirecardCEECheckoutPage extends PaymentModule
 
     private function setCart($cart_id)
     {
-        $this->myCart = new Cart(intval($cart_id));
+        $this->myCart = new Cart((int)$cart_id);
     }
 
     private function setOrder($order_id)
@@ -1595,15 +1603,16 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $this->myOrder;
     }
 
-    private function getMultiSelectArray($key){
+    private function getMultiSelectArray($key)
+    {
         $val = Configuration::get($key);
 
-        if(!Tools::strlen($val)){
+        if (!Tools::strlen($val)) {
             return array();
         }
 
         $ret = json_decode($val);
-        if( !is_array($ret)){
+        if (!is_array($ret)) {
             return array();
         }
         return $ret;
@@ -1623,14 +1632,18 @@ class WirecardCEECheckoutPage extends PaymentModule
         $billingAddress = new Address($cart->id_address_invoice);
         $shippingAddress = new Address($cart->id_address_delivery);
 
-        if (!in_array((new Country($billingAddress->id_country))->iso_code,
-            $chosen_billing_countries)
+        if (!in_array(
+            (new Country($billingAddress->id_country))->iso_code,
+            $chosen_billing_countries
+        )
         ) {
             return false;
         }
 
-        if (!in_array((new Country($shippingAddress->id_country))->iso_code,
-            $chosen_shipping_countries)
+        if (!in_array(
+            (new Country($shippingAddress->id_country))->iso_code,
+            $chosen_shipping_countries
+        )
         ) {
             return false;
         }
@@ -1664,7 +1677,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $chosen_billing_countries = $this->getMultiSelectArray(self::WCP_INSTALLMENT_BILLING_COUNTRIES);
 
         $currency = new Currency($cart->id_currency);
-        if (!in_array($currency->iso_code,$chosen_currencies)) {
+        if (!in_array($currency->iso_code, $chosen_currencies)) {
             return false;
         }
 
@@ -1673,14 +1686,16 @@ class WirecardCEECheckoutPage extends PaymentModule
 
         if (!in_array(
             (new Country($billingAddress->id_country))->iso_code,
-            $chosen_billing_countries)
+            $chosen_billing_countries
+        )
         ) {
             return false;
         }
 
         if (!in_array(
             (new Country($shippingAddress->id_country))->iso_code,
-            $chosen_shipping_countries)
+            $chosen_shipping_countries
+        )
         ) {
             return false;
         }
