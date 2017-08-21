@@ -1098,7 +1098,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         return $basket;
     }
 
-    public function initiatePayment($paymentType)
+    public function initiatePayment($paymentType, $additionalData)
     {
         if (in_array($paymentType, array(
             WirecardCEE_QMore_PaymentType::INSTALLMENT,
@@ -1151,7 +1151,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             $this->setCart($this->context->cookie->id_cart);
 
             try {
-                $redirectUrl = $this->initiate($paymentType);
+                $redirectUrl = $this->initiate($paymentType, $additionalData);
                 $this->context->cookie->qpayRedirectUrl = $redirectUrl;
                 $this->context->cookie->write();
             } catch (Exception $e) {
@@ -1170,9 +1170,8 @@ class WirecardCEECheckoutPage extends PaymentModule
         }
     }
 
-    private function initiate($paymentType)
+    private function initiate($paymentType, $additionalData)
     {
-
         $customer = new Customer($this->context->customer->id);
         $cart = new Cart($this->context->cookie->id_cart);
 
@@ -1211,6 +1210,15 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setCustomerStatement($this->getCustomerStatement())
             ->createConsumerMerchantCrmId($customer->email);
 
+	    $consumerData = new WirecardCEE_Stdlib_ConsumerData();
+	    $consumerData->setIpAddress($_SERVER['REMOTE_ADDR']);
+	    $consumerData->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+
+	    $init->setConsumerData($consumerData);
+
+	    if (isset($additionalData['financialinstitution'])) {
+	    	$init->setFinancialInstitution($additionalData['financialinstitution']);
+	    }
         if (Tools::strlen(Configuration::get(self::WCP_DISPLAY_TEXT))) {
             $init->setDisplayText(Configuration::get(self::WCP_DISPLAY_TEXT));
         }

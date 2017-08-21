@@ -102,7 +102,7 @@ abstract class WirecardCEE_Stdlib_Response_ResponseAbstract
      */
     public function __construct($response)
     {
-        if ($response instanceof Response) {
+	    if ($response instanceof Response) {
             $this->_response = WirecardCEE_Stdlib_SerialApi::decode($response->getBody());
         } elseif (is_array($response)) {
             $this->_response = $response;
