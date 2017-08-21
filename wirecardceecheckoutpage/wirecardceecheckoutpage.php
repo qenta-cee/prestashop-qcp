@@ -1233,7 +1233,7 @@ class WirecardCEECheckoutPage extends PaymentModule
 
         $init->setConsumerData($consumerData);
 
-        if ($this->context->cookie->wcpConsumerDeviceId){
+        if ($this->context->cookie->wcpConsumerDeviceId) {
             $init->consumerDeviceId = $this->context->cookie->wcpConsumerDeviceId;
             unset($this->context->cookie->wcpConsumerDeviceId);
         }
