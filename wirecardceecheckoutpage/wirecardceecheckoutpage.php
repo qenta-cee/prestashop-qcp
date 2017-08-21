@@ -923,22 +923,22 @@ class WirecardCEECheckoutPage extends PaymentModule
             return ".." . Media::getMediaPath('/modules/wirecardceecheckoutpage/views/img/payment_types/' . Tools::strtolower($payment_type) . '.png');
         };
 
-	    if ($this->context->cookie->wcpConsumerDeviceId) {
-	        $consumerDeviceId = $this->context->cookie->wcpConsumerDeviceId;
-	    } else {
-		    $timestamp = microtime();
-		    $customerId = $this->getCustomerId();
-		    $consumerDeviceId = md5($customerId . "_" . $timestamp);
-		    $this->context->cookie->wcpConsumerDeviceId = $consumerDeviceId;
-		    $this->context->cookie->write();
-	    }
+        if ($this->context->cookie->wcpConsumerDeviceId) {
+            $consumerDeviceId = $this->context->cookie->wcpConsumerDeviceId;
+        } else {
+            $timestamp = microtime();
+            $customerId = $this->getCustomerId();
+            $consumerDeviceId = md5($customerId . "_" . $timestamp);
+            $this->context->cookie->wcpConsumerDeviceId = $consumerDeviceId;
+            $this->context->cookie->write();
+        }
 
-	    $ratepay = '<script language="JavaScript">var di = {t:"'.$consumerDeviceId.'",v:"WDWL",l:"Checkout"};</script>';
-	    $ratepay .= '<script type="text/javascript" src="//d.ratepay.com/'.$consumerDeviceId.'/di.js"></script>';
-	    $ratepay .= '<noscript><link rel="stylesheet" type="text/css" href="//d.ratepay.com/di.css?t='.$consumerDeviceId.'&v=WDWL&l=Checkout"></noscript>';
-	    $ratepay .= '<object type="application/x-shockwave-flash" data="//d.ratepay.com/WDWL/c.swf" width="0" height="0"><param name="movie" value="//d.ratepay.com/WDWL/c.swf" /><param name="flashvars" value="t='.$consumerDeviceId.'&v=WDWL"/><param name="AllowScriptAccess" value="always"/></object>';
+        $ratepay = '<script language="JavaScript">var di = {t:"'.$consumerDeviceId.'",v:"WDWL",l:"Checkout"};</script>';
+        $ratepay .= '<script type="text/javascript" src="//d.ratepay.com/'.$consumerDeviceId.'/di.js"></script>';
+        $ratepay .= '<noscript><link rel="stylesheet" type="text/css" href="//d.ratepay.com/di.css?t='.$consumerDeviceId.'&v=WDWL&l=Checkout"></noscript>';
+        $ratepay .= '<object type="application/x-shockwave-flash" data="//d.ratepay.com/WDWL/c.swf" width="0" height="0"><param name="movie" value="//d.ratepay.com/WDWL/c.swf" /><param name="flashvars" value="t='.$consumerDeviceId.'&v=WDWL"/><param name="AllowScriptAccess" value="always"/></object>';
 
-	    echo $ratepay;
+        echo $ratepay;
 
         foreach ($paymentTypes as $paymentType) {
             $payment = new PaymentOption();
@@ -963,7 +963,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                     : $this->l('consent'))
             );
 
-	        if ($this->context->smarty->templateExists($template)) {
+            if ($this->context->smarty->templateExists($template)) {
                 $this->context->smarty->assign(
                     array(
                         "action" => $action,
@@ -1227,20 +1227,20 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setCustomerStatement($this->getCustomerStatement())
             ->createConsumerMerchantCrmId($customer->email);
 
-	    $consumerData = new WirecardCEE_Stdlib_ConsumerData();
-	    $consumerData->setIpAddress($_SERVER['REMOTE_ADDR']);
-	    $consumerData->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+        $consumerData = new WirecardCEE_Stdlib_ConsumerData();
+        $consumerData->setIpAddress($_SERVER['REMOTE_ADDR']);
+        $consumerData->setUserAgent($_SERVER['HTTP_USER_AGENT']);
 
-	    $init->setConsumerData($consumerData);
+        $init->setConsumerData($consumerData);
 
-	    if ($this->context->cookie->wcpConsumerDeviceId){
-		    $init->consumerDeviceId = $this->context->cookie->wcpConsumerDeviceId;
-		    unset($this->context->cookie->wcpConsumerDeviceId);
-	    }
+        if ($this->context->cookie->wcpConsumerDeviceId){
+            $init->consumerDeviceId = $this->context->cookie->wcpConsumerDeviceId;
+            unset($this->context->cookie->wcpConsumerDeviceId);
+        }
 
-	    if (isset($additionalData['financialinstitution'])) {
-	    	$init->setFinancialInstitution($additionalData['financialinstitution']);
-	    }
+        if (isset($additionalData['financialinstitution'])) {
+            $init->setFinancialInstitution($additionalData['financialinstitution']);
+        }
         if (Tools::strlen(Configuration::get(self::WCP_DISPLAY_TEXT))) {
             $init->setDisplayText(Configuration::get(self::WCP_DISPLAY_TEXT));
         }

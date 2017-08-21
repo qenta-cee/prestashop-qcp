@@ -64,11 +64,11 @@ class WirecardCEECheckoutPagePaymentModuleFrontController extends ModuleFrontCon
         }
 
         try {
-	        $additionalData = array();
-	        if (Tools::strlen(Tools::getValue('financialInstitution', ''))) {
-		        $additionalData['financialinstitution'] = Tools::getValue('financialInstitution');
-	        }
-	        $this->module->initiatePayment(Tools::getValue('paymentType'), $additionalData);
+            $additionalData = array();
+            if (Tools::strlen(Tools::getValue('financialInstitution', ''))) {
+    	        $additionalData['financialinstitution'] = Tools::getValue('financialInstitution');
+            }
+            $this->module->initiatePayment(Tools::getValue('paymentType'), $additionalData);
         } catch (Zend_Exception $e) {
             echo $this->module->displayError($e->getMessage());
         }
