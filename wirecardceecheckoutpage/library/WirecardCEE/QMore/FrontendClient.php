@@ -144,18 +144,18 @@ class WirecardCEE_QMore_FrontendClient extends WirecardCEE_Stdlib_Client_ClientA
     const PLUGIN_VERSION = 'pluginVersion';
 
     /**
+     * Field name: customerMerchantCrmId
+     *
+     * @var string
+     */
+    const CONSUMER_MERCHANT_CRM_ID = 'consumerMerchantCrmId';
+
+    /**
      * Field name: financialInstitution
      *
      * @var string
      */
     const FINANCIAL_INSTITUTION = 'financialInstitution';
-
-    /**
-     * Field name: consumerMerchantCrmId
-     *
-     * @var string
-     */
-    const CONSUMER_MERCHANT_CRM_ID = 'consumerMerchantCrmId';
 
     /**
      * Consumer data holder
@@ -348,19 +348,6 @@ class WirecardCEE_QMore_FrontendClient extends WirecardCEE_Stdlib_Client_ClientA
     public function setPaymentType($sPaymentType)
     {
         $this->_setField(self::PAYMENT_TYPE, $sPaymentType);
-
-        return $this;
-    }
-
-    /**
-     * setter for the customer merchant crm id
-     * @param $userEmail
-     *
-     * @return $this
-     */
-    public function createConsumerMerchantCrmId($userEmail)
-    {
-        $this->_setField(self::CONSUMER_MERCHANT_CRM_ID, md5($userEmail));
 
         return $this;
     }
@@ -708,6 +695,18 @@ class WirecardCEE_QMore_FrontendClient extends WirecardCEE_Stdlib_Client_ClientA
     {
         $this->_setField(self::PLUGIN_VERSION, $sPluginVersion);
 
+        return $this;
+    }
+
+    /**
+     * setter for the customer merchant crm id
+     * @param $userEmail
+     *
+     * @return $this
+     */
+    public function createConsumerMerchantCrmId($userEmail)
+    {
+        $this->_setField(self::CONSUMER_MERCHANT_CRM_ID, md5($userEmail));
         return $this;
     }
 

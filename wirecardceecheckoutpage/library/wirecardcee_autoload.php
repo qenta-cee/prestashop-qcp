@@ -34,7 +34,7 @@ spl_autoload_register('wirecardceecheckoutpage_autoload');
 
 function wirecardceecheckoutpage_autoload($class)
 {
-    $namespaces = array('WirecardCEE', 'Wirecard', 'GuzzleHttp', 'React');
+    $namespaces = array('WirecardCEE', 'Wirecard', 'React');
     $namespace = null;
     $modelNamespace = 'WirecardCheckoutPage';
     $paymentNamespace = 'WirecardCheckoutPagePayment';

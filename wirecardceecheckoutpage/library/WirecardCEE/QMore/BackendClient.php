@@ -297,7 +297,7 @@ class WirecardCEE_QMore_BackendClient extends WirecardCEE_Stdlib_Client_ClientAb
             throw new WirecardCEE_QMore_Exception_InvalidArgumentException(sprintf('PASSWORD passed to %s is invalid.',
                 __METHOD__));
         }
-        
+
         // everything ok! let's set the fields
         $this->_setField(self::CUSTOMER_ID, $sCustomerId);
         $this->_setField(self::SHOP_ID, $sShopId);
