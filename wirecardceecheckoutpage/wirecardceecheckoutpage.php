@@ -983,7 +983,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                 return array('title' => $this->l('TatraPay'),
                     'value' => Wirecard_CEE_QPay_PaymentType::TATRAPAY);
             case self::WCP_PT_SOFORTUEBERWEISUNG:
-                return array('title' => $this->l('SOFORT Banking'),
+                return array('title' => $this->l('Online bank transfer.'),
                     'value' => Wirecard_CEE_QPay_PaymentType::SOFORTUEBERWEISUNG);
             case self::WCP_PT_PBX:
                 return array('title' => $this->l('paybox'),

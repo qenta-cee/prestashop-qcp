@@ -55,7 +55,7 @@ $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_c09143333
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_f91ab041fe9d6057740394b8b7903a0f'] = 'iDEAL';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_e0f764e23bc8c486ca18c6378291afe3'] = 'giropay';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_3ff2080bb62b70687276c50da9c9f2c4'] = 'TatraPay';
-$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_8ad65eb3da9995173280649f090218c3'] = 'Sofort.';
+$_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_842619a36f50f72dd86d00ba73a379c4'] = 'Sofort.';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_b642d33b12d1cb0f1b8667a9bcca9951'] = 'paybox';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_6abcd8eecb4f2abb6ccfe36ef7046ba0'] = 'paysafecard';
 $_MODULE['<{wirecardceecheckoutpage}prestashop>wirecardceecheckoutpage_a41cdeba95dd125a6efea489c114a4f9'] = '@Quick';
