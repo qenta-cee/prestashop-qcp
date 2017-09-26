@@ -1355,7 +1355,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     private function getPluginVersion()
     {
         $pluginVersion = array(
-            'shopName' => 'Presta Store',
+            'shopName' => 'Prestashop',
             'shopVersion' => _PS_VERSION_,
             'pluginName' => $this->name,
             'pluginVersion' => $this->version
