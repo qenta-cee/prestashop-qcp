@@ -143,7 +143,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '2.1.1';
+        $this->version = '2.1.2';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
