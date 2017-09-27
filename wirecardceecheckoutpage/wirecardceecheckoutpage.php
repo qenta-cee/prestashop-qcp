@@ -143,7 +143,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '2.1.1';
+        $this->version = '2.1.2';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -1549,7 +1549,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                 return array('title' => $this->l('TatraPay'),
                     'value' => WirecardCEE_QPay_PaymentType::TATRAPAY);
             case self::WCP_PT_SOFORTUEBERWEISUNG:
-                return array('title' => $this->l('SOFORT Banking'),
+                return array('title' => $this->l('Online bank transfer.'),
                     'value' => WirecardCEE_QPay_PaymentType::SOFORTUEBERWEISUNG);
             case self::WCP_PT_PBX:
                 return array('title' => $this->l('paybox'),
