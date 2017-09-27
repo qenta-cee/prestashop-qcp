@@ -122,7 +122,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     {
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '1.5.0';
+        $this->version = '1.5.1';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentExecution', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -983,7 +983,7 @@ class WirecardCEECheckoutPage extends PaymentModule
                 return array('title' => $this->l('TatraPay'),
                     'value' => Wirecard_CEE_QPay_PaymentType::TATRAPAY);
             case self::WCP_PT_SOFORTUEBERWEISUNG:
-                return array('title' => $this->l('SOFORT Banking'),
+                return array('title' => $this->l('Online bank transfer.'),
                     'value' => Wirecard_CEE_QPay_PaymentType::SOFORTUEBERWEISUNG);
             case self::WCP_PT_PBX:
                 return array('title' => $this->l('paybox'),
@@ -1355,7 +1355,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     private function getPluginVersion()
     {
         $pluginVersion = array(
-            'shopName' => 'Presta Store',
+            'shopName' => 'Prestashop',
             'shopVersion' => _PS_VERSION_,
             'pluginName' => $this->name,
             'pluginVersion' => $this->version
