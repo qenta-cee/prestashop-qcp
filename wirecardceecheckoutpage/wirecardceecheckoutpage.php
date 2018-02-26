@@ -143,7 +143,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '2.1.2';
+        $this->version = '2.1.3';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -932,13 +932,15 @@ class WirecardCEECheckoutPage extends PaymentModule
             $this->context->cookie->wcpConsumerDeviceId = $consumerDeviceId;
             $this->context->cookie->write();
         }
+        if ((Configuration::get(self::WCP_INVOICE_PROVIDER) == 'ratepay' && (bool)Configuration::get(self::WCP_PT_INVOICE)) ||
+            (Configuration::get(self::WCP_INSTALLMENT_PROVIDER) == 'ratepay' && (bool)Configuration::get(self::WCP_PT_INSTALLMENT))) {
+            $ratepay = '<script language="JavaScript">var di = {t:"' . $consumerDeviceId . '",v:"WDWL",l:"Checkout"};</script>';
+            $ratepay .= '<script type="text/javascript" src="//d.ratepay.com/' . $consumerDeviceId . '/di.js"></script>';
+            $ratepay .= '<noscript><link rel="stylesheet" type="text/css" href="//d.ratepay.com/di.css?t=' . $consumerDeviceId . '&v=WDWL&l=Checkout"></noscript>';
+            $ratepay .= '<object type="application/x-shockwave-flash" data="//d.ratepay.com/WDWL/c.swf" width="0" height="0"><param name="movie" value="//d.ratepay.com/WDWL/c.swf" /><param name="flashvars" value="t=' . $consumerDeviceId . '&v=WDWL"/><param name="AllowScriptAccess" value="always"/></object>';
 
-        $ratepay = '<script language="JavaScript">var di = {t:"'.$consumerDeviceId.'",v:"WDWL",l:"Checkout"};</script>';
-        $ratepay .= '<script type="text/javascript" src="//d.ratepay.com/'.$consumerDeviceId.'/di.js"></script>';
-        $ratepay .= '<noscript><link rel="stylesheet" type="text/css" href="//d.ratepay.com/di.css?t='.$consumerDeviceId.'&v=WDWL&l=Checkout"></noscript>';
-        $ratepay .= '<object type="application/x-shockwave-flash" data="//d.ratepay.com/WDWL/c.swf" width="0" height="0"><param name="movie" value="//d.ratepay.com/WDWL/c.swf" /><param name="flashvars" value="t='.$consumerDeviceId.'&v=WDWL"/><param name="AllowScriptAccess" value="always"/></object>';
-
-        echo $ratepay;
+            echo $ratepay;
+        }
 
         foreach ($paymentTypes as $paymentType) {
             $payment = new PaymentOption();
