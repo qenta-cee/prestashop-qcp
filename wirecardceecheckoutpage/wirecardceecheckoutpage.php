@@ -102,7 +102,7 @@ class WirecardCEECheckoutPage extends PaymentModule
     const WCP_PT_TRUSTPAY = 'WCP_PT_TRUSTPAY';
     const WCP_PT_INVOICE = 'WCP_PT_INVOICE';
     const WCP_PT_INSTALLMENT = 'WCP_PT_INSTALLMENT';
-    const WCP_PT_BANCONTACT = 'WCP_PT_BANCONTACT';
+    const WCP_PT_BANCONTACT_MISTERCASH = 'WCP_PT_BANCONTACT_MISTERCASH';
     const WCP_PT_P24 = 'WCP_PT_PRZELEWY24';
     const WCP_PT_MONETA = 'WCP_PT_MONETA';
     const WCP_PT_POLI = 'WCP_PT_POLI';
@@ -143,7 +143,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '2.1.3';
+        $this->version = '2.1.4';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -1280,6 +1280,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             $init = $this->setConsumerInformation($init);
         }
 
+
         return $init->initiate()->getRedirectUrl();
     }
 
@@ -1330,12 +1331,36 @@ class WirecardCEECheckoutPage extends PaymentModule
             ->setIpAddress($this->getConsumerIpAddress());
 
         $customer = new Customer($this->getOrder()->id_customer);
-        $consumerData->setBirthDate(DateTime::createFromFormat("Y-m-d", $customer->birthday))
+
+        $consumerData->setBirthDate($this->getValidDate($customer->birthday, "Y-m-d"))
             ->setEmail($customer->email);
 
-        $request->setConsumerData($consumerData);
-
         return $request;
+    }
+
+    /*
+     * Returns today's date if $date is invalid
+     */
+    public function getValidDate($date, $format)
+    {
+        if (!empty($date) && strtotime($date) !== false) {
+            if ($this->isValidDateFormat($date)) {
+                return DateTime::createFromFormat($format, $date);
+            }
+        }
+        return new DateTime();
+    }
+
+    /*
+     * Checks if format is Y-m-d
+     */
+    public function isValidDateFormat($date)
+    {
+        if (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $date)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function confirmResponse()
@@ -1518,7 +1543,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             self::WCP_PT_EPS, self::WCP_PT_IDL, self::WCP_PT_GIROPAY, self::WCP_PT_TATRAPAY,
             self::WCP_PT_SOFORTUEBERWEISUNG, self::WCP_PT_PBX, self::WCP_PT_QUICK, self::WCP_PT_PAYPAL,
             self::WCP_PT_EPAY_BG, self::WCP_PT_SEPA_DD, self::WCP_PT_TRUSTPAY, self::WCP_PT_INVOICE,
-            self::WCP_PT_INSTALLMENT, self::WCP_PT_BANCONTACT, self::WCP_PT_P24, self::WCP_PT_MONETA,
+            self::WCP_PT_INSTALLMENT, self::WCP_PT_BANCONTACT_MISTERCASH, self::WCP_PT_P24, self::WCP_PT_MONETA,
             self::WCP_PT_POLI, self::WCP_PT_EKONTO, self::WCP_PT_TRUSTLY, self::WCP_PT_SKRILLWALLET,
             self::WCP_PT_VOUCHER);
     }
@@ -1580,7 +1605,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             case self::WCP_PT_INSTALLMENT:
                 return array('title' => $this->l('Installment'),
                     'value' => WirecardCEE_QPay_PaymentType::INSTALLMENT);
-            case self::WCP_PT_BANCONTACT:
+            case self::WCP_PT_BANCONTACT_MISTERCASH:
                 return array('title' => $this->l('Bancontact'),
                     'value' => WirecardCEE_QPay_PaymentType::BMC);
             case self::WCP_PT_P24:
