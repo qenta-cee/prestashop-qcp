@@ -41,6 +41,11 @@ ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . realpath(dirn
 
 require_once "library/wirecardcee_autoload.php";
 
+/**
+ * Class WirecardCEECheckoutPage
+ *
+ * @method string l() l($key)
+ */
 class WirecardCEECheckoutPage extends PaymentModule
 {
     const WCP_CUSTOMER_ID_DEMO = 'D200001';
@@ -143,7 +148,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '2.1.4';
+        $this->version = '2.1.5';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -912,8 +917,10 @@ class WirecardCEECheckoutPage extends PaymentModule
 
         $customer_id = $params['cookie']->id_customer;
         $customer = new Customer($customer_id);
-        $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
-
+        $age = 0;
+        if (Tools::strlen($customer->birthday) && $customer->birthday != '0000-00-00') {
+            $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
+        }
         $result = array();
 
         unset($this->context->cookie->qpayRedirectUrl);
@@ -1127,7 +1134,10 @@ class WirecardCEECheckoutPage extends PaymentModule
 
             /** @var int $age - age from customer object */
             $customer = new Customer($this->context->customer->id);
-            $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
+            $age = 0;
+            if (Tools::strlen($customer->birthday) && $customer->birthday != '0000-00-00') {
+                $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
+            }
 
             if ($age < 18 && count(array_intersect(array_flip(Tools::getAllValues()), $keys_to_check)) < count($keys_to_check)) {
                 // redirect back because some params are missing
@@ -1151,6 +1161,9 @@ class WirecardCEECheckoutPage extends PaymentModule
                     );
                     die();
                 }
+
+                $customer->birthday = $birthdate->format('Y-m-d');
+                $customer->save();
             }
         }
 
@@ -1334,6 +1347,8 @@ class WirecardCEECheckoutPage extends PaymentModule
 
         $consumerData->setBirthDate($this->getValidDate($customer->birthday, "Y-m-d"))
             ->setEmail($customer->email);
+
+        $request->setConsumerData($consumerData);
 
         return $request;
     }
