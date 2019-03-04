@@ -148,7 +148,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'wirecardceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '2.1.4';
+        $this->version = '2.1.5';
         $this->author = 'Wirecard';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -919,7 +919,7 @@ class WirecardCEECheckoutPage extends PaymentModule
         $customer = new Customer($customer_id);
         $age = 0;
         if (Tools::strlen($customer->birthday) && $customer->birthday != '0000-00-00') {
-        $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
+            $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
         }
         $result = array();
 
@@ -1136,7 +1136,7 @@ class WirecardCEECheckoutPage extends PaymentModule
             $customer = new Customer($this->context->customer->id);
             $age = 0;
             if (Tools::strlen($customer->birthday) && $customer->birthday != '0000-00-00') {
-            $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
+                $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
             }
 
             if ($age < 18 && count(array_intersect(array_flip(Tools::getAllValues()), $keys_to_check)) < count($keys_to_check)) {
