@@ -1,0 +1,41 @@
+.payment-option.clearfix {
+    position:relative;
+    padding-bottom:7px;
+    border-bottom:1px dotted #d3d3d3;
+}
+
+.payment-option label {
+    position:absolute;
+    display: block !important;
+    top:0;
+    left:40px;
+    right:0;
+    bottom:-8px;
+}
+
+.payment-option label span {
+    float: left;
+}
+
+.payment-option label img {
+    float: right;
+    height: 20px;
+}
+
+#payment_form .alert span {
+    clear:both;
+}
+
+p.payment_module a.pt_wirecard:after {
+    display: block;
+    content: "\f054";
+    position: absolute;
+    right: 15px;
+    margin-top: -11px;
+    top: 50%;
+    font-family: "FontAwesome";
+    font-size: 25px;
+    height: 22px;
+    width: 14px;
+    color: #777;
+}

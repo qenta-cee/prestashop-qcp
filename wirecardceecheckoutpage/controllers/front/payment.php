@@ -36,11 +36,15 @@ class WirecardCEECheckoutPagePaymentModuleFrontController extends ModuleFrontCon
     {
         $cart = $this->context->cart;
 
-        if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active) {
+        if ($cart->id_customer == 0
+            || $cart->id_address_delivery == 0
+            || $cart->id_address_invoice == 0
+            || !$this->module->active) {
             Tools::redirect('index.php?controller=order&step=1');
         }
 
-        // Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
+        // Check that this payment option is still available in case the customer
+        // changed his address just before the end of the checkout process
         $authorized = false;
         foreach (Module::getPaymentModules() as $module) {
             if ($module['name'] == 'wirecardceecheckoutpage') {
@@ -60,7 +64,11 @@ class WirecardCEECheckoutPagePaymentModuleFrontController extends ModuleFrontCon
         }
 
         try {
-            $this->module->initiatePayment(Tools::getValue('paymentType'));
+            $additionalData = array();
+            if (Tools::strlen(Tools::getValue('financialInstitution', ''))) {
+                $additionalData['financialinstitution'] = Tools::getValue('financialInstitution');
+            }
+            $this->module->initiatePayment(Tools::getValue('paymentType'), $additionalData);
         } catch (Zend_Exception $e) {
             echo $this->module->displayError($e->getMessage());
         }

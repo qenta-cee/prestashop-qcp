@@ -2,9 +2,9 @@
         <module>
             <name>wirecardceecheckoutpage</name>
             <displayName><![CDATA[Wirecard Checkout Page]]></displayName>
-            <version><![CDATA[1.5.1]]></version>
+            <version>2.1.5</version>
             <description><![CDATA[Wirecard Checkout Page payment module]]></description>
-            <author><![CDATA[Wirecard CEE]]></author>
+            <author>Wirecard</author>
             <tab><![CDATA[payments_gateways]]></tab>
             <confirmUninstall>Are you sure you want to delete these details?</confirmUninstall>
             <is_configurable>1</is_configurable>

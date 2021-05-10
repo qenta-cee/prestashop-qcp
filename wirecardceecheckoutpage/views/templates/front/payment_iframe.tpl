@@ -28,8 +28,20 @@
  * By installing the plugin into the shop system the customer agrees to these terms of use.
  * Please do not use the plugin if you do not agree to these terms of use!
  *}
+{extends file='page.tpl'}
+{block name='content'}
+	<section id="content">
+		<div class="card card-block">
+			<div class="row">
+				<div class="col-xs-12">
 
-{capture name=path}
-	{l s='Pay with Wirecard Checkout Page' mod='wirecardceecheckoutpage'}
-{/capture}
-<iframe src="{$redirectUrl}" width="100%" height="840" name="{$windowName}" border="0" frameborder="0"></iframe>
+					{if isset($nbProducts) && $nbProducts <= 0}
+						<p class="alert alert-warning">{l s='Your shopping cart is empty.' mod='wirecardceecheckoutpage'}</p>
+					{else}
+						<iframe width="100%" height="640px" frameborder="0" name="{$windowName}" src="{$redirectUrl}"></iframe>
+					{/if}
+				</div>
+			</div>
+		</div>
+	</section>
+{/block}

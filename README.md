@@ -1,17 +1,10 @@
 # Wirecard Checkout Page plugin for PrestaShop
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/wirecard/prestashop-wcp/master/LICENSE)
-[![PrestaShop](https://img.shields.io/badge/PrestaShop-v1.5.6.2-green.svg)](https://www.prestashop.com/)
-[![PrestaShop](https://img.shields.io/badge/PrestaShop-v1.6.1.9-green.svg)](https://www.prestashop.com/)
+[![PrestaShop](https://img.shields.io/badge/PrestaShop-v1.7.5.0-green.svg)](https://www.prestashop.com/)
 [![PHP v5.6](https://img.shields.io/badge/php-v5.6-yellow.svg)](http://www.php.net)
-
-----
-**IMPORTANT INFORMATION**  
-You are visiting a shop extension which will become obsolete in the near future. It has been replaced by a new one with new features and enhanced functionality.   
-Please use our new shop extension available on [prestashop.wirecard.com](https://prestashop.wirecard.com), which will be maintained, updated and supported on a regular basis.  
-If you have any questions, please contact shop-systems-support@wirecard.com
-
-----
+[![PHP v7.0](https://img.shields.io/badge/php-v7.0-yellow.svg)](http://www.php.net)
+[![PHP v7.1](https://img.shields.io/badge/php-v7.1-yellow.svg)](http://www.php.net)
 
 Wirecard Checkout Page plugin for PrestaShop. 
 
