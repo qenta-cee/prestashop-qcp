@@ -1,0 +1,25 @@
+{
+    "name": "qenta/prestashop-qenta-checkout-page",
+    "license": "GPL-2.0",
+    "type": "library",
+    "description": "QENTA Checkout Page plugin for Prestashop",
+    "keywords": ["QENTA", "checkout", "page", "seamless", "payment"],
+    "homepage": "https://www.qenta-cee.at",
+    "support": {
+        "email": "support@qenta.com",
+        "docs": "https://guides.qenta.com"
+    },
+    "require": {
+        "php": ">=7.2.0",
+        "qenta/checkout-client-library": "5.0.2"
+    },
+    "config": {
+        "vendor-dir": "qentaceecheckoutpage/library"
+    },
+    "autoload": {
+        "psr-4": {
+            "QentaCEE\\": "src/QentaCEE/"
+        }
+    },
+    "prefer-stable" : true
+}
