@@ -40,9 +40,7 @@ if (!defined('_PS_VERSION_')) {
 ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . realpath(dirname(__FILE__))
     . DIRECTORY_SEPARATOR . 'library');
 
-
 require_once "library/autoload.php";
-
 
 class QentaCEECheckoutPage extends PaymentModule
 {
@@ -1224,9 +1222,10 @@ class QentaCEECheckoutPage extends PaymentModule
         $amount = round($this->getAmount(), 2);
 
         $init = new QentaCEE\QPay\FrontendClient($this->getConfigArray());
+
         $init->setPluginVersion($this->getPluginVersion())
             ->setConfirmUrl($this->getConfirmUrl())
-            ->setOrderReference(md5($this->getOrderReference(microtime())))
+            ->setOrderReference($this->getOrderReference())
             ->setAmount($amount)
             ->setCurrency($this->getCurrentCurrency())
             ->setPaymentType($paymentType)
@@ -1475,7 +1474,7 @@ class QentaCEECheckoutPage extends PaymentModule
         return $this->display(__FILE__, 'breakout_iframe.tpl');
     }
 
-    private function saveReturnedFields(QentaCEE\Stdlib\Return\ReturnAbstract $response)
+    private function saveReturnedFields(QentaCEE\Stdlib\Returns\ReturnAbstract $response)
     {
         $msg = new Message();
         $message = '';

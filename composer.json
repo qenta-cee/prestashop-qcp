@@ -11,15 +11,11 @@
     },
     "require": {
         "php": ">=7.2.0",
-        "qenta/checkout-client-library": "5.0.2"
+        "qenta/checkout-client-library": "5.0.2",
+        "guzzlehttp/guzzle": "6.5.x-dev" 
     },
     "config": {
         "vendor-dir": "qentaceecheckoutpage/library"
-    },
-    "autoload": {
-        "psr-4": {
-            "QentaCEE\\": "src/QentaCEE/"
-        }
     },
     "prefer-stable" : true
 }
