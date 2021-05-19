@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shop System Plugins - Terms of Use
  *
@@ -40,8 +39,13 @@ if (!defined('_PS_VERSION_')) {
 ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . realpath(dirname(__FILE__))
     . DIRECTORY_SEPARATOR . 'library');
 
-require_once "library/autoload.php";
+require_once "library/wirecardcee_autoload.php";
 
+/**
+ * Class QentaCEECheckoutPage
+ *
+ * @method string l() l($key)
+ */
 class QentaCEECheckoutPage extends PaymentModule
 {
     const QCP_CUSTOMER_ID_DEMO = 'D200001';
@@ -162,8 +166,7 @@ class QentaCEECheckoutPage extends PaymentModule
 
     public function install()
     {
-        if (
-            !parent::install()
+        if (!parent::install()
             || !$this->registerHook('paymentOptions')
             || !$this->registerHook('paymentReturn')
             || !$this->registerHook('actionFrontControllerSetMedia')
@@ -181,7 +184,8 @@ class QentaCEECheckoutPage extends PaymentModule
                 if (!Configuration::updateGlobalValue(
                     $parameter['name'],
                     $default
-                )) {
+                )
+                ) {
                     return false;
                 }
             }
@@ -408,7 +412,7 @@ class QentaCEECheckoutPage extends PaymentModule
             )
         );
 
-        if ($which == self::QCP_INVOICE_PROVIDER) {
+        if ($which==self::QCP_INVOICE_PROVIDER) {
             $ret[] = array(
                 'key' => 'qenta',
                 'value' => 'qenta'
@@ -466,7 +470,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'required' => true,
                         'class' => 'fixed-width-xl',
                         'maxchar' => 7,
-                        'desc' => $this->l('Customer number you received from Qenta (customerId, i.e. D2#####).') . ' <a target="_blank" href="https://guides.qenta.at/request_parameters#customerid">' . $this->l('More information') . ' <i class="icon-external-link"></i></a>',
+                        'desc' => $this->l('Customer number you received from Qenta (customerId, i.e. D2#####).').' <a target="_blank" href="https://guides.qenta.com/request_parameters#customerid">'.$this->l('More information').' <i class="icon-external-link"></i></a>',
                     ),
                     array(
                         'type' => 'text',
@@ -475,7 +479,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'class' => 'fixed-width-xl',
                         'maxchar' => 16,
                         'default' => '',
-                        'desc' => $this->l('Shop identifier in case of more than one shop.') . ' <a target="_blank" href="https://guides.qenta.at/request_parameters#shopid">' . $this->l('More information') . ' <i class="icon-external-link"></i></a>'
+                        'desc' => $this->l('Shop identifier in case of more than one shop.').' <a target="_blank" href="https://guides.qenta.com/request_parameters#shopid">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
                         'type' => 'text',
@@ -484,7 +488,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'name' => self::QCP_SECRET,
                         'class' => 'fixed-width-xxl',
                         'required' => true,
-                        'desc' => $this->l('String which you received from Qenta for signing and validating data to prove their authenticity.') . ' <a target="_blank" href="https://guides.qenta.at/security:start#secret_and_fingerprint">' . $this->l('More information') . ' <i class="icon-external-link"></i></a>'
+                        'desc' => $this->l('String which you received from Qenta for signing and validating data to prove their authenticity.').' <a target="_blank" href="https://guides.qenta.com/security:start#secret_and_fingerprint">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
                         'type' => 'text',
@@ -493,7 +497,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'class' => 'fixed-width-xl',
                         'required' => false,
                         'default' => '',
-                        'desc' => $this->l('Text displayed during the payment process, i.e. "Thank you for ordering in xy-shop".') . ' <a target="_blank" href="https://guides.qenta.at/request_parameters#displaytext">' . $this->l('More information') . ' <i class="icon-external-link"></i></a>'
+                        'desc' => $this->l('Text displayed during the payment process, i.e. "Thank you for ordering in xy-shop".').' <a target="_blank" href="https://guides.qenta.com/request_parameters#displaytext">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
                         'type' => 'text',
@@ -502,7 +506,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'class' => 'fixed-width-xs',
                         'default' => '-1',
                         'required' => false,
-                        'desc' => $this->l('Maximum number of payment attempts regarding a certain order.') . ' <a target="_blank" href="https://guides.qenta.at/request_parameters#maxretries">' . $this->l('More information') . ' <i class="icon-external-link"></i></a>'
+                        'desc' => $this->l('Maximum number of payment attempts regarding a certain order.').' <a target="_blank" href="https://guides.qenta.com/request_parameters#maxretries">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
                         'type' => 'select',
@@ -520,7 +524,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'default' => 0,
                         'class' => 't',
                         'values' => $radio_options,
-                        'desc' => $this->l('Enabling an automated deposit of payments.') . ' <a target="_blank" href="https://guides.qenta.at/request_parameters#autodeposit">' . $this->l('More information') . ' <i class="icon-external-link"></i></a>'
+                        'desc' => $this->l('Enabling an automated deposit of payments.').' <a target="_blank" href="https://guides.qenta.com/request_parameters#autodeposit">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
                         'type' => $radio_type,
@@ -557,7 +561,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'type' => 'onoff',
                         'default' => 0,
                         'doc' => $this->l('Consumer must accept payolution terms during the checkout process.'),
-                        'docref' => 'https://guides.qenta.at/payment_methods:invoice:payolution'
+                        'docref' => 'https://guides.qenta.com/payment_methods:invoice:payolution'
                     ),
                     array(
                         'name' => self::QCP_PAYOLUTION_MID,
@@ -572,7 +576,7 @@ class QentaCEECheckoutPage extends PaymentModule
                 'fields' => $paymentTypeSwitches
             ),
             'invoiceoptions' => array(
-                'tab' => $this->l('Invoice', 'qentaqcpbackend'),
+                'tab' => $this->l('Invoice', 'wirecardwpcbackend'),
                 'fields' => array(
                     array(
                         'name' => self::QCP_INVOICE_PROVIDER,
@@ -652,7 +656,8 @@ class QentaCEECheckoutPage extends PaymentModule
                         'default' => 'payolution',
                         'required' => true,
                         'options' => 'getProvider'
-                    ),
+                    )
+                ,
                     array(
                         'name' => self::QCP_INSTALLMENT_ADDRESS_EQUAL,
                         'label' => $this->l('Billing/shipping address must be identical'),
@@ -935,8 +940,7 @@ class QentaCEECheckoutPage extends PaymentModule
             $this->context->cookie->write();
         }
         if ((Configuration::get(self::QCP_INVOICE_PROVIDER) == 'ratepay' && (bool)Configuration::get(self::QCP_PT_INVOICE)) ||
-            (Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'ratepay' && (bool)Configuration::get(self::QCP_PT_INSTALLMENT))
-        ) {
+            (Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'ratepay' && (bool)Configuration::get(self::QCP_PT_INSTALLMENT))) {
             $ratepay = '<script language="JavaScript">var di = {t:"' . $consumerDeviceId . '",v:"WDWL",l:"Checkout"};</script>';
             $ratepay .= '<script type="text/javascript" src="//d.ratepay.com/' . $consumerDeviceId . '/di.js"></script>';
             $ratepay .= '<noscript><link rel="stylesheet" type="text/css" href="//d.ratepay.com/di.css?t=' . $consumerDeviceId . '&v=WDWL&l=Checkout"></noscript>';
@@ -959,7 +963,7 @@ class QentaCEECheckoutPage extends PaymentModule
                 true
             );
             $template = "module:qentaceecheckoutpage/views/templates/hook/methods/" . Tools::strtolower($current_method) . ".tpl";
-            $payment_class = new QentaCEE\QPay\PaymentType($current_method);
+            $payment_class = new WirecardCEE_QPay_PaymentType($current_method);
 
             $consent_message = sprintf(
                 $this->l("I agree that the data which are necessary for the liquidation of invoice payments and which are used to complete the identity and credit check are transmitted to payolution.  My %s can be revoked at any time with future effect."),
@@ -983,7 +987,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         "consent_text" => $consent_message,
                         "submit_text" => $this->l('Pay using') . ' ' . $this->l($paymentType['title']),
                         "has_consent" => Configuration::get(self::QCP_PAYOLUTION_TERMS)
-                            && (($current_method == QentaCEE\QPay\PaymentType::INVOICE && Configuration::get(self::QCP_INVOICE_PROVIDER) == 'payolution') || ($current_method === QentaCEE\QPay\PaymentType::INSTALLMENT && Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'payolution'))
+                            && (($current_method == WirecardCEE_QPay_PaymentType::INVOICE && Configuration::get(self::QCP_INVOICE_PROVIDER) == 'payolution') || ($current_method === WirecardCEE_QPay_PaymentType::INSTALLMENT && Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'payolution'))
                     )
                 );
 
@@ -1008,14 +1012,14 @@ class QentaCEECheckoutPage extends PaymentModule
         $this->setOrder((int)Tools::getValue('psOrderNumber'));
         unset($this->context->cookie->qpayRedirectUrl);
 
-        if ($this->getOrder()->hasBeenPaid() || Tools::getValue('paymentState') == QentaCEE\QPay\ReturnFactory::STATE_SUCCESS) {
+        if ($this->getOrder()->hasBeenPaid() || Tools::getValue('paymentState') == WirecardCEE_QPay_ReturnFactory::STATE_SUCCESS) {
             $this->smarty->assign(array(
                 'status' => 'ok'
             ));
             return $this->display(__FILE__, 'payment_return.tpl');
         }
 
-        if (Tools::getValue('paymentState') == QentaCEE\QPay\ReturnFactory::STATE_PENDING) {
+        if (Tools::getValue('paymentState') == WirecardCEE_QPay_ReturnFactory::STATE_PENDING) {
             $this->smarty->assign(array(
                 'status' => 'ok'
             ));
@@ -1084,14 +1088,14 @@ class QentaCEECheckoutPage extends PaymentModule
      *
      * @param Cart $cart
      *
-     * @return QentaCEE\Stdlib\Basket
+     * @return WirecardCEE_Stdlib_Basket
      */
     public function getBasket(Cart $cart)
     {
-        $basket = new QentaCEE\Stdlib\Basket();
+        $basket = new WirecardCEE_Stdlib_Basket();
 
         foreach ($cart->getProducts() as $product) {
-            $item = new QentaCEE\Stdlib\Basket\Item($product['reference']);
+            $item = new WirecardCEE_Stdlib_Basket_Item($product['reference']);
             $item->setUnitGrossAmount(number_format($product['price_wt'], 2, '.', ''))
                 ->setUnitNetAmount(number_format($product['price'], 2, '.', ''))
                 ->setUnitTaxAmount(number_format($product['price_wt'] - $product['price'], 2, '.', ''))
@@ -1106,7 +1110,7 @@ class QentaCEECheckoutPage extends PaymentModule
         }
 
         if ($cart->getTotalShippingCost(null, true) > 0) {
-            $item = new QentaCEE\Stdlib\Basket\Item('shipping');
+            $item = new WirecardCEE_Stdlib_Basket_Item('shipping');
             $item->setDescription('Shipping')
                 ->setName('Shipping')
                 ->setUnitGrossAmount($cart->getTotalShippingCost(null, true))
@@ -1123,10 +1127,10 @@ class QentaCEECheckoutPage extends PaymentModule
     public function initiatePayment($paymentType, $additionalData)
     {
         if (in_array($paymentType, array(
-            QentaCEE\QMore\PaymentType::INSTALLMENT,
-            QentaCEE\QMore\PaymentType::INVOICE
+            WirecardCEE_QMore_PaymentType::INSTALLMENT,
+            WirecardCEE_QMore_PaymentType::INVOICE
         ))) {
-            $keys_to_check = array('years', 'months', 'days');
+            $keys_to_check = array('years','months','days');
 
             /** @var int $age - age from customer object */
             $customer = new Customer($this->context->customer->id);
@@ -1221,11 +1225,10 @@ class QentaCEECheckoutPage extends PaymentModule
 
         $amount = round($this->getAmount(), 2);
 
-        $init = new QentaCEE\QPay\FrontendClient($this->getConfigArray());
-
+        $init = new WirecardCEE_QPay_FrontendClient($this->getConfigArray());
         $init->setPluginVersion($this->getPluginVersion())
             ->setConfirmUrl($this->getConfirmUrl())
-            ->setOrderReference($this->getOrderReference())
+            ->setOrderReference($this->getOrderReference().microtime())
             ->setAmount($amount)
             ->setCurrency($this->getCurrentCurrency())
             ->setPaymentType($paymentType)
@@ -1239,7 +1242,7 @@ class QentaCEECheckoutPage extends PaymentModule
             ->setCustomerStatement($this->getCustomerStatement())
             ->createConsumerMerchantCrmId($customer->email);
 
-        $consumerData = new QentaCEE\Stdlib\ConsumerData();
+        $consumerData = new WirecardCEE_Stdlib_ConsumerData();
         $consumerData->setIpAddress($_SERVER['REMOTE_ADDR']);
         $consumerData->setUserAgent($_SERVER['HTTP_USER_AGENT']);
 
@@ -1262,32 +1265,30 @@ class QentaCEECheckoutPage extends PaymentModule
         }
 
 
-        if (
-            Configuration::get(self::QCP_SEND_BASKET_DATA)
-            || ($paymentType == QentaCEE\QPay\PaymentType::INSTALLMENT && Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'ratepay')
-            || ($paymentType == QentaCEE\QPay\PaymentType::INVOICE && (Configuration::get(self::QCP_INVOICE_PROVIDER) == 'ratepay' || Configuration::get(self::QCP_INVOICE_PROVIDER) == 'qenta'))
+        if (Configuration::get(self::QCP_SEND_BASKET_DATA)
+            || ($paymentType == WirecardCEE_QPay_PaymentType::INSTALLMENT && Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'ratepay')
+            || ($paymentType == WirecardCEE_QPay_PaymentType::INVOICE && (Configuration::get(self::QCP_INVOICE_PROVIDER) == 'ratepay' || Configuration::get(self::QCP_INVOICE_PROVIDER) == 'qenta'))
         ) {
             $init->setBasket($this->getBasket($cart));
         }
 
-        if ($paymentType == QentaCEE\QPay\PaymentType::INVOICE) {
+        if ($paymentType == WirecardCEE_QPay_PaymentType::INVOICE) {
             $init->setFinancialInstitution(Configuration::get(self::QCP_INVOICE_PROVIDER));
         }
 
-        if ($paymentType == QentaCEE\QPay\PaymentType::INSTALLMENT) {
+        if ($paymentType == WirecardCEE_QPay_PaymentType::INSTALLMENT) {
             $init->setFinancialInstitution(Configuration::get(self::QCP_INSTALLMENT_PROVIDER));
         }
 
-        if ($paymentType == QentaCEE\QPay\PaymentType::MASTERPASS) {
+        if ($paymentType == WirecardCEE_QPay_PaymentType::MASTERPASS) {
             $init->setShippingProfile('NO_SHIPPING');
         }
         //additionally parameters can be added easily because of the magic method __set
         $init->psOrderNumber = $this->getOrder()->id;
 
-        if (
-            $this->getSendAdditionalData()
-            || $paymentType == QentaCEE\QPay\PaymentType::INVOICE
-            || $paymentType == QentaCEE\QPay\PaymentType::INSTALLMENT
+        if ($this->getSendAdditionalData()
+            || $paymentType == WirecardCEE_QPay_PaymentType::INVOICE
+            || $paymentType == WirecardCEE_QPay_PaymentType::INSTALLMENT
         ) {
             $init = $this->setConsumerInformation($init);
         }
@@ -1296,12 +1297,12 @@ class QentaCEECheckoutPage extends PaymentModule
         return $init->initiate()->getRedirectUrl();
     }
 
-    private function setConsumerInformation(QentaCEE\QPay\FrontendClient $request)
+    private function setConsumerInformation(WirecardCEE_QPay_FrontendClient $request)
     {
         $psBillingAddress = new Address($this->getOrder()->id_address_invoice);
         $psShippingAddress = new Address($this->getOrder()->id_address_delivery);
 
-        $billingAddress = new QentaCEE\Stdlib\ConsumerData\Address(QentaCEE\Stdlib\ConsumerData\Address::TYPE_BILLING);
+        $billingAddress = new WirecardCEE_Stdlib_ConsumerData_Address(WirecardCEE_Stdlib_ConsumerData_Address::TYPE_BILLING);
         $billingState = new State($psBillingAddress->id_state);
         $billingCountry = new Country($psBillingAddress->id_country);
         $billingAddress->setFirstname($psBillingAddress->firstname)
@@ -1318,7 +1319,7 @@ class QentaCEECheckoutPage extends PaymentModule
             $billingAddress->setState($billingState->name);
         }
 
-        $shippingAddress = new QentaCEE\Stdlib\ConsumerData\Address(QentaCEE\Stdlib\ConsumerData\Address::TYPE_SHIPPING);
+        $shippingAddress = new WirecardCEE_Stdlib_ConsumerData_Address(WirecardCEE_Stdlib_ConsumerData_Address::TYPE_SHIPPING);
         $shippingState = new State($psShippingAddress->id_state);
         $shippingCountry = new Country($psShippingAddress->id_country);
         $shippingAddress->setFirstname($psShippingAddress->firstname)
@@ -1336,7 +1337,7 @@ class QentaCEECheckoutPage extends PaymentModule
             $shippingAddress->setState($shippingState->name);
         }
 
-        $consumerData = new QentaCEE\Stdlib\ConsumerData();
+        $consumerData = new WirecardCEE_Stdlib_ConsumerData();
         $consumerData->addAddressInformation($billingAddress)
             ->addAddressInformation($shippingAddress)
             ->setUserAgent($this->getConsumerUserAgent())
@@ -1380,49 +1381,49 @@ class QentaCEECheckoutPage extends PaymentModule
     public function confirmResponse()
     {
         if (!$this->active) {
-            return QentaCEE\QPay\ReturnFactory::generateConfirmResponseString($this->l("Module is not active!"));
+            return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString($this->l("Module is not active!"));
         }
 
         $response = Tools::file_get_contents('php://input');
         $this->log(__METHOD__ . ':raw:' . $response);
 
         try {
-            $return = QentaCEE\QPay\ReturnFactory::getInstance($response, $this->getSecret());
+            $return = WirecardCEE_QPay_ReturnFactory::getInstance($response, $this->getSecret());
             $status = $return->validate();
 
             switch ($status) {
-                case QentaCEE\QPay\ReturnFactory::STATE_SUCCESS:
+                case WirecardCEE_QPay_ReturnFactory::STATE_SUCCESS:
                     $orderState = _PS_OS_PAYMENT_;
                     //create message with returned Parameters.
                     $this->saveReturnedFields($return);
                     $this->updatePaymentInformation($return->getReturned()['psOrderNumber'], $return->getReturned()['paymentType'], $return->getReturned()[$this->getTransactionId()]);
                     break;
-                case QentaCEE\QPay\ReturnFactory::STATE_CANCEL:
+                case WirecardCEE_QPay_ReturnFactory::STATE_CANCEL:
                     $orderState = _PS_OS_CANCELED_;
                     break;
-                case QentaCEE\QPay\ReturnFactory::STATE_FAILURE:
+                case WirecardCEE_QPay_ReturnFactory::STATE_FAILURE:
                     $this->saveReturnedFields($return);
                     $orderState = _PS_OS_ERROR_;
                     break;
-                case QentaCEE\QPay\ReturnFactory::STATE_PENDING:
+                case WirecardCEE_QPay_ReturnFactory::STATE_PENDING:
                     $this->saveReturnedFields($return);
                     $orderState = $this->getAwaitingState();
                     break;
                 default:
-                    return QentaCEE\QPay\ReturnFactory::generateConfirmResponseString('Invalid uncaught paymentState. Should not happen.');
+                    return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString('Invalid uncaught paymentState. Should not happen.');
             }
 
             $this->setOrder($return->getReturned()['psOrderNumber']);
             $this->setOrderState($orderState);
-        } catch (QentaCEE\Stdlib\Validate\Exception $e) {
+        } catch (WirecardCEE_Stdlib_Validate_Exception $e) {
             $this->log(__METHOD__ . ':' . $e->getMessage());
             if (isset($response->psOrderNumber)) {
                 $this->setOrder($response->psOrderNumber);
                 $this->setOrderState(_PS_OS_ERROR_);
             }
-            return QentaCEE\QPay\ReturnFactory::generateConfirmResponseString($e->getMessage());
+            return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString($e->getMessage());
         }
-        return QentaCEE\QPay\ReturnFactory::generateConfirmResponseString();
+        return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString();
     }
 
     private function updatePaymentInformation($orderId, $paymentType, $transactionId = '')
@@ -1474,7 +1475,7 @@ class QentaCEECheckoutPage extends PaymentModule
         return $this->display(__FILE__, 'breakout_iframe.tpl');
     }
 
-    private function saveReturnedFields(QentaCEE\Stdlib\Returns\ReturnAbstract $response)
+    private function saveReturnedFields(WirecardCEE_Stdlib_Return_ReturnAbstract $response)
     {
         $msg = new Message();
         $message = '';
@@ -1520,11 +1521,9 @@ class QentaCEECheckoutPage extends PaymentModule
     {
         $paymentTypes = array();
         foreach ($this->getPaymentTypes() as $type) {
-            if (
-                !Configuration::get($type) ||
+            if (!Configuration::get($type) ||
                 ($type == self::QCP_PT_INVOICE && !$this->isInvoiceAllowed($cart)) ||
-                ($type == self::QCP_PT_INSTALLMENT && !$this->isInstallmentAllowed($cart))
-            ) {
+                ($type == self::QCP_PT_INSTALLMENT && !$this->isInstallmentAllowed($cart))) {
                 continue;
             }
             array_push($paymentTypes, $this->getPaymentTypeInfo($type));
@@ -1534,7 +1533,7 @@ class QentaCEECheckoutPage extends PaymentModule
 
     private function isPaymentTypeEnabled($paymentType)
     {
-        if ($paymentType == QentaCEE\QPay\PaymentType::SELECT) {
+        if ($paymentType == WirecardCEE_QPay_PaymentType::SELECT) {
             return true;
         } else {
             return Configuration::get('QCP_PT_' . $paymentType);
@@ -1555,155 +1554,99 @@ class QentaCEECheckoutPage extends PaymentModule
 
     private function getPaymentTypes()
     {
-        return array(
-            self::QCP_PT_CCARD, self::QCP_PT_MASTERPASS, self::QCP_PT_CCARD_MOTO, self::QCP_PT_MAESTRO,
+        return array(self::QCP_PT_CCARD, self::QCP_PT_MASTERPASS, self::QCP_PT_CCARD_MOTO, self::QCP_PT_MAESTRO,
             self::QCP_PT_EPS, self::QCP_PT_IDL, self::QCP_PT_GIROPAY, self::QCP_PT_TATRAPAY,
             self::QCP_PT_SOFORTUEBERWEISUNG, self::QCP_PT_PBX, self::QCP_PT_QUICK, self::QCP_PT_PAYPAL,
             self::QCP_PT_EPAY_BG, self::QCP_PT_SEPA_DD, self::QCP_PT_TRUSTPAY, self::QCP_PT_INVOICE,
             self::QCP_PT_INSTALLMENT, self::QCP_PT_BANCONTACT_MISTERCASH, self::QCP_PT_P24, self::QCP_PT_MONETA,
             self::QCP_PT_POLI, self::QCP_PT_EKONTO, self::QCP_PT_TRUSTLY, self::QCP_PT_SKRILLWALLET,
-            self::QCP_PT_VOUCHER
-        );
+            self::QCP_PT_VOUCHER);
     }
 
     private function getPaymentTypeInfo($type)
     {
         switch ($type) {
             case self::QCP_PT_CCARD:
-                return array(
-                    'title' => $this->l('Credit Card'),
-                    'value' => QentaCEE\QPay\PaymentType::CCARD
-                );
+                return array('title' => $this->l('Credit Card'),
+                    'value' => WirecardCEE_QPay_PaymentType::CCARD);
             case self::QCP_PT_CCARD_MOTO:
-                return array(
-                    'title' => $this->l('Credit Card - Mail Order and Telephone Order'),
-                    'value' => QentaCEE\QPay\PaymentType::CCARD_MOTO
-                );
+                return array('title' => $this->l('Credit Card - Mail Order and Telephone Order'),
+                    'value' => WirecardCEE_QPay_PaymentType::CCARD_MOTO);
             case self::QCP_PT_MAESTRO:
-                return array(
-                    'title' => $this->l('Maestro SecureCode'),
-                    'value' => QentaCEE\QPay\PaymentType::MAESTRO
-                );
+                return array('title' => $this->l('Maestro SecureCode'),
+                    'value' => WirecardCEE_QPay_PaymentType::MAESTRO);
             case self::QCP_PT_MASTERPASS:
-                return array(
-                    'title' => $this->l('Masterpass'),
-                    'value' => QentaCEE\QPay\PaymentType::MASTERPASS
-                );
+                return array('title' => $this->l('Masterpass'),
+                    'value' => WirecardCEE_QPay_PaymentType::MASTERPASS);
             case self::QCP_PT_EPS:
-                return array(
-                    'title' => $this->l('eps Online-Überweisung'),
-                    'value' => QentaCEE\QPay\PaymentType::EPS
-                );
+                return array('title' => $this->l('eps Online-Überweisung'),
+                    'value' => WirecardCEE_QPay_PaymentType::EPS);
             case self::QCP_PT_IDL:
-                return array(
-                    'title' => $this->l('iDEAL'),
-                    'value' => QentaCEE\QPay\PaymentType::IDL
-                );
+                return array('title' => $this->l('iDEAL'),
+                    'value' => WirecardCEE_QPay_PaymentType::IDL);
             case self::QCP_PT_GIROPAY:
-                return array(
-                    'title' => $this->l('giropay'),
-                    'value' => QentaCEE\QPay\PaymentType::GIROPAY
-                );
+                return array('title' => $this->l('giropay'),
+                    'value' => WirecardCEE_QPay_PaymentType::GIROPAY);
             case self::QCP_PT_TATRAPAY:
-                return array(
-                    'title' => $this->l('TatraPay'),
-                    'value' => QentaCEE\QPay\PaymentType::TATRAPAY
-                );
+                return array('title' => $this->l('TatraPay'),
+                    'value' => WirecardCEE_QPay_PaymentType::TATRAPAY);
             case self::QCP_PT_SOFORTUEBERWEISUNG:
-                return array(
-                    'title' => $this->l('Online bank transfer.'),
-                    'value' => QentaCEE\QPay\PaymentType::SOFORTUEBERWEISUNG
-                );
+                return array('title' => $this->l('Online bank transfer.'),
+                    'value' => WirecardCEE_QPay_PaymentType::SOFORTUEBERWEISUNG);
             case self::QCP_PT_PBX:
-                return array(
-                    'title' => $this->l('paybox'),
-                    'value' => QentaCEE\QPay\PaymentType::PBX
-                );
+                return array('title' => $this->l('paybox'),
+                    'value' => WirecardCEE_QPay_PaymentType::PBX);
             case self::QCP_PT_PSC:
-                return array(
-                    'title' => $this->l('paysafecard'),
-                    'value' => QentaCEE\QPay\PaymentType::PSC
-                );
+                return array('title' => $this->l('paysafecard'),
+                    'value' => WirecardCEE_QPay_PaymentType::PSC);
             case self::QCP_PT_QUICK:
-                return array(
-                    'title' => $this->l('@Quick'),
-                    'value' => QentaCEE\QPay\PaymentType::QUICK
-                );
+                return array('title' => $this->l('@Quick'),
+                    'value' => WirecardCEE_QPay_PaymentType::QUICK);
             case self::QCP_PT_PAYPAL:
-                return array(
-                    'title' => $this->l('PayPal'),
-                    'value' => QentaCEE\QPay\PaymentType::PAYPAL
-                );
+                return array('title' => $this->l('PayPal'),
+                    'value' => WirecardCEE_QPay_PaymentType::PAYPAL);
             case self::QCP_PT_EPAY_BG:
-                return array(
-                    'title' => $this->l('ePay.bg'),
-                    'value' => QentaCEE\QPay\PaymentType::EPAYBG
-                );
+                return array('title' => $this->l('ePay.bg'),
+                    'value' => WirecardCEE_QPay_PaymentType::EPAYBG);
             case self::QCP_PT_SEPA_DD:
-                return array(
-                    'title' => $this->l('SEPA Direct Debit'),
-                    'value' => QentaCEE\QPay\PaymentType::SEPADD
-                );
+                return array('title' => $this->l('SEPA Direct Debit'),
+                    'value' => WirecardCEE_QPay_PaymentType::SEPADD);
             case self::QCP_PT_TRUSTPAY:
-                return array(
-                    'title' => $this->l('TrustPay'),
-                    'value' => QentaCEE\QPay\PaymentType::TRUSTPAY
-                );
+                return array('title' => $this->l('TrustPay'),
+                    'value' => WirecardCEE_QPay_PaymentType::TRUSTPAY);
             case self::QCP_PT_INVOICE:
-                return array(
-                    'title' => $this->l('Invoice'),
-                    'value' => QentaCEE\QPay\PaymentType::INVOICE
-                );
+                return array('title' => $this->l('Invoice'),
+                    'value' => WirecardCEE_QPay_PaymentType::INVOICE);
             case self::QCP_PT_INSTALLMENT:
-                return array(
-                    'title' => $this->l('Installment'),
-                    'value' => QentaCEE\QPay\PaymentType::INSTALLMENT
-                );
+                return array('title' => $this->l('Installment'),
+                    'value' => WirecardCEE_QPay_PaymentType::INSTALLMENT);
             case self::QCP_PT_BANCONTACT_MISTERCASH:
-                return array(
-                    'title' => $this->l('Bancontact'),
-                    'value' => QentaCEE\QPay\PaymentType::BMC
-                );
+                return array('title' => $this->l('Bancontact'),
+                    'value' => WirecardCEE_QPay_PaymentType::BMC);
             case self::QCP_PT_P24:
-                return array(
-                    'title' => $this->l('Przelewy24'),
-                    'value' => QentaCEE\QPay\PaymentType::P24
-                );
+                return array('title' => $this->l('Przelewy24'),
+                    'value' => WirecardCEE_QPay_PaymentType::P24);
             case self::QCP_PT_MONETA:
-                return array(
-                    'title' => $this->l('moneta.ru'),
-                    'value' => QentaCEE\QPay\PaymentType::MONETA
-                );
+                return array('title' => $this->l('moneta.ru'),
+                    'value' => WirecardCEE_QPay_PaymentType::MONETA);
             case self::QCP_PT_POLI:
-                return array(
-                    'title' => $this->l('POLi'),
-                    'value' => QentaCEE\QPay\PaymentType::POLI
-                );
+                return array('title' => $this->l('POLi'),
+                    'value' => WirecardCEE_QPay_PaymentType::POLI);
             case self::QCP_PT_EKONTO:
-                return array(
-                    'title' => $this->l('eKonto'),
-                    'value' => QentaCEE\QPay\PaymentType::EKONTO
-                );
+                return array('title' => $this->l('eKonto'),
+                    'value' => WirecardCEE_QPay_PaymentType::EKONTO);
             case self::QCP_PT_TRUSTLY:
-                return array(
-                    'title' => $this->l('Trustly'),
-                    'value' => QentaCEE\QPay\PaymentType::TRUSTLY
-                );
+                return array('title' => $this->l('Trustly'),
+                    'value' => WirecardCEE_QPay_PaymentType::TRUSTLY);
             case self::QCP_PT_SKRILLWALLET:
-                return array(
-                    'title' => $this->l('Skrill Digital Wallet'),
-                    'value' => QentaCEE\QPay\PaymentType::SKRILLWALLET
-                );
+                return array('title' => $this->l('Skrill Digital Wallet'),
+                    'value' => WirecardCEE_QPay_PaymentType::SKRILLWALLET);
             case self::QCP_PT_VOUCHER:
-                return array(
-                    'title' => $this->l('My Voucher'),
-                    'value' => QentaCEE\QPay\PaymentType::VOUCHER
-                );
+                return array('title' => $this->l('My Voucher'),
+                    'value' => WirecardCEE_QPay_PaymentType::VOUCHER);
             default:
-                return array(
-                    'title' => $this->l('The consumer may select one of the activated payment methods directly in Qenta Checkout Page.'),
-                    'value' => QentaCEE\QPay\PaymentType::SELECT
-                );
+                return array('title' => $this->l('The consumer may select one of the activated payment methods directly in Qenta Checkout Page.'),
+                    'value' => WirecardCEE_QPay_PaymentType::SELECT);
         }
     }
 
@@ -1764,14 +1707,16 @@ class QentaCEECheckoutPage extends PaymentModule
         if (!in_array(
             (new Country($billingAddress->id_country))->iso_code,
             $chosen_billing_countries
-        )) {
+        )
+        ) {
             return false;
         }
 
         if (!in_array(
             (new Country($shippingAddress->id_country))->iso_code,
             $chosen_shipping_countries
-        )) {
+        )
+        ) {
             return false;
         }
 
@@ -1814,14 +1759,16 @@ class QentaCEECheckoutPage extends PaymentModule
         if (!in_array(
             (new Country($billingAddress->id_country))->iso_code,
             $chosen_billing_countries
-        )) {
+        )
+        ) {
             return false;
         }
 
         if (!in_array(
             (new Country($shippingAddress->id_country))->iso_code,
             $chosen_shipping_countries
-        )) {
+        )
+        ) {
             return false;
         }
 
@@ -2053,7 +2000,7 @@ class QentaCEECheckoutPage extends PaymentModule
 
     private function getPluginVersion()
     {
-        return QentaCEE\QPay\FrontendClient::generatePluginVersion(
+        return WirecardCEE_QPay_FrontendClient::generatePluginVersion(
             'Prestashop',
             _PS_VERSION_,
             $this->name,
