@@ -1205,7 +1205,7 @@ class QentaCEECheckoutPage extends PaymentModule
         $init = new WirecardCEE_QPay_FrontendClient($this->getConfigArray());
         $init->setPluginVersion($this->getPluginVersion())
             ->setConfirmUrl($this->getConfirmUrl())
-            ->setOrderReference($this->getOrderReference().microtime())
+            ->setOrderReference($this->getOrderReference())
             ->setAmount($amount)
             ->setCurrency($this->getCurrentCurrency())
             ->setPaymentType($paymentType)
