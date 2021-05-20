@@ -1,7 +1,7 @@
 # QENTA Checkout Page plugin for OpenCart
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/qenta-cee/opencart-qcp/master/LICENSE)
-[![OpenCart](https://img.shields.io/badge/OpenCart-v3.0.3.7-green.svg)](https://www.opencart.com/)
+[![PrestaShop](https://img.shields.io/badge/PrestaShop-v1.7.5.1-green.svg)](https://www.prestashop.com/)
 [![PHP v7.2](https://img.shields.io/badge/php-v7.2-yellow.svg)](https://www.php.net)
 [![PHP v7.3](https://img.shields.io/badge/php-v7.3-yellow.svg)](https://www.php.net)
 [![PHP v7.4](https://img.shields.io/badge/php-v7.4-yellow.svg)](https://www.php.net)
@@ -14,7 +14,7 @@ QENTA Checkout Page plugin for OpenCart.
 Our [Online Guides](https://guides.qenta.com/) provide further information on payment methods and additional features. Please observe our [terms of use](https://guides.qenta.com/shop_plugins/info/#TermsOfUse) regarding plugins.
 
 ## Installation
-Our [Online Guides](https://guides.qenta.com/shop_plugins/opencart_qcp/start "Installation details") also provide technical documentation, installation and configuration instructions for the extension.
+Our [Online Guides](https://guides.qenta.com/shop_plugins/prestashop_qcp/start "Installation details") also provide technical documentation, installation and configuration instructions for the extension.
 
 
 ## QPAY Checkout Page
