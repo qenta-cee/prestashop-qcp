@@ -1,4 +1,4 @@
-# QENTA Checkout Page plugin for OpenCart
+# QENTA Checkout Page plugin for PrestaShop
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/qenta-cee/opencart-qcp/master/LICENSE)
 [![PrestaShop](https://img.shields.io/badge/PrestaShop-v1.7.5.1-green.svg)](https://www.prestashop.com/)
