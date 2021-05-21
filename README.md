@@ -9,7 +9,7 @@
 
 ----
 
-QENTA Checkout Page plugin for OpenCart.
+QENTA Checkout Page plugin for PrestaShop.
 
 Our [Online Guides](https://guides.qenta.com/) provide further information on payment methods and additional features. Please observe our [terms of use](https://guides.qenta.com/shop_plugins/info/#TermsOfUse) regarding plugins.
 
