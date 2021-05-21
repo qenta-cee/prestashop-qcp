@@ -389,13 +389,6 @@ class QentaCEECheckoutPage extends PaymentModule
             )
         );
 
-        if ($which==self::QCP_INVOICE_PROVIDER) {
-            $ret[] = array(
-                'key' => 'qenta',
-                'value' => 'qenta'
-            );
-        }
-
         return $ret;
     }
 
