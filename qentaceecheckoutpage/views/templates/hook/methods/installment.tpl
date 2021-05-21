@@ -1,0 +1,1 @@
+{include 'module:qentaceecheckoutpage/views/templates/hook/methods/invoice.tpl'}

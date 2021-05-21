@@ -1,0 +1,1982 @@
+<?php
+/**
+ * Shop System Plugins
+ * - Terms of use can be found under
+ * https://guides.qenta.com/shop_plugins:info
+ * - License can be found under:
+ * https://github.com/qenta-cee/prestashop-qcp/blob/master/LICENSE
+*/
+
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
+ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . realpath(dirname(__FILE__))
+    . DIRECTORY_SEPARATOR . 'library');
+
+require_once "library/wirecardcee_autoload.php";
+
+
+class QentaCEECheckoutPage extends PaymentModule
+{
+    const QCP_CUSTOMER_ID_DEMO = 'D200001';
+    const QCP_SHOP_ID_DEMO = '';
+    const QCP_SECRET_DEMO = 'B8AKTPWBRMNBV455FG6M2DANE99WU2';
+    const QCP_CUSTOMER_ID_TEST = 'D200411';
+    const QCP_SHOP_ID_TEST = '';
+    const QCP_SECRET_TEST = 'CHCSH7UGHVVX2P7EHDHSY4T2S4CGYK4QBE4M5YUUG2ND5BEZWNRZW5EJYVJQ';
+    const QCP_CUSTOMER_ID_TEST3D = 'D200411';
+    const QCP_SHOP_ID_TEST3D = '3D';
+    const QCP_SECRET_TEST3D = 'DP4TMTPQQWFJW34647RM798E9A5X7E8ATP462Z4VGZK53YEJ3JWXS98B9P4F';
+    const QCP_PT_DEFAULT = 0;
+    const WINDOW_NAME = 'Checkout_Page_Frame';
+
+    const QCP_CONFIGURATION_MODE = 'QCP_CONFIGURATION_MODE';
+    const QCP_CUSTOMER_ID = 'QCP_CUSTOMER_ID';
+    const QCP_SHOP_ID = 'QCP_SHOP_ID';
+    const QCP_SECRET = 'QCP_SECRET';
+    const QCP_DISPLAY_TEXT = 'QCP_DISPLAY_TEXT';
+    const QCP_MAX_RETRIES = 'QCP_MAX_RETRIES';
+    const QCP_INVOICE_MIN = 'QCP_INVOICE_MIN';
+    const QCP_INVOICE_MAX = 'QCP_INVOICE_MAX';
+    const QCP_INVOICE_PROVIDER = 'QCP_INVOICE_PROVIDER';
+    const QCP_INVOICE_ADDRESS_EQUAL = 'QCP_INVOICE_ADDRESS_EQUAL';
+    const QCP_INVOICE_BILLING_COUNTRIES = 'QCP_INVOICE_BILLING_COUNTRIES';
+    const QCP_INVOICE_SHIPPING_COUNTRIES = 'QCP_INVOICE_SHIPPING_COUNTRIES';
+    const QCP_INVOICE_CURRENCIES = 'QCP_INVOICE_CURRENCIES';
+    const QCP_INSTALLMENT_MIN = 'QCP_INSTALLMENT_MIN';
+    const QCP_INSTALLMENT_MAX = 'QCP_INSTALLMENT_MAX';
+    const QCP_INSTALLMENT_PROVIDER = 'QCP_INSTALLMENT_PROVIDER';
+    const QCP_INSTALLMENT_ADDRESS_EQUAL = 'QCP_INSTALLMENT_ADDRESS_EQUAL';
+    const QCP_INSTALLMENT_BILLING_COUNTRIES = 'QCP_INSTALLMENT_BILLING_COUNTRIES';
+    const QCP_INSTALLMENT_SHIPPING_COUNTRIES = 'QCP_INSTALLMENT_SHIPPING_COUNTRIES';
+    const QCP_INSTALLMENT_CURRENCIES = 'QCP_INSTALLMENT_CURRENCIES';
+    const QCP_PAYOLUTION_TERMS = 'QCP_PAYOLUTION_TERMS';
+    const QCP_PAYOLUTION_MID = 'QCP_PAYOLUTION_MID';
+    const QCP_TRANSACTION_ID = 'QCP_TRANSACTION_ID';
+    const QCP_AUTO_DEPOSIT = 'QCP_AUTO_DEPOSIT';
+    const QCP_SEND_ADDITIONAL_DATA = 'QCP_SEND_ADDITIONAL_DATA';
+    const QCP_SEND_BASKET_DATA = 'QCP_SEND_BASKET_DATA';
+    const QCP_USE_IFRAME = 'QCP_USE_IFRAME';
+    const QCP_OS_AWAITING = 'QCP_OS_AWAITING';
+
+    const QCP_PT_CCARD = 'QCP_PT_CCARD';
+    const QCP_PT_CCARD_MOTO = 'QCP_PT_CCARD-MOTO';
+    const QCP_PT_MAESTRO = 'QCP_PT_MAESTRO';
+    const QCP_PT_MASTERPASS = 'QCP_PT_MASTERPASS';
+    const QCP_PT_EPS = 'QCP_PT_EPS';
+    const QCP_PT_IDL = 'QCP_PT_IDL';
+    const QCP_PT_GIROPAY = 'QCP_PT_GIROPAY';
+    const QCP_PT_TATRAPAY = 'QCP_PT_TATRAPAY';
+    const QCP_PT_SOFORTUEBERWEISUNG = 'QCP_PT_SOFORTUEBERWEISUNG';
+    const QCP_PT_PBX = 'QCP_PT_PBX';
+    const QCP_PT_PSC = 'QCP_PT_PSC';
+    const QCP_PT_QUICK = 'QCP_PT_QUICK';
+    const QCP_PT_PAYPAL = 'QCP_PT_PAYPAL';
+    const QCP_PT_EPAY_BG = 'QCP_PT_EPAY_BG';
+    const QCP_PT_SEPA_DD = 'QCP_PT_SEPA-DD';
+    const QCP_PT_TRUSTPAY = 'QCP_PT_TRUSTPAY';
+    const QCP_PT_INVOICE = 'QCP_PT_INVOICE';
+    const QCP_PT_INSTALLMENT = 'QCP_PT_INSTALLMENT';
+    const QCP_PT_BANCONTACT_MISTERCASH = 'QCP_PT_BANCONTACT_MISTERCASH';
+    const QCP_PT_P24 = 'QCP_PT_PRZELEWY24';
+    const QCP_PT_MONETA = 'QCP_PT_MONETA';
+    const QCP_PT_POLI = 'QCP_PT_POLI';
+    const QCP_PT_EKONTO = 'QCP_PT_EKONTO';
+    const QCP_PT_TRUSTLY = 'QCP_PT_TRUSTLY';
+    const QCP_PT_SKRILLWALLET = 'QCP_PT_SKRILLWALLET';
+    const QCP_PT_VOUCHER = 'QCP_PT_VOUCHER';
+
+    private $html = '';
+    private $myOrder;
+    private $myCart;
+    private $postErrors = array();
+    private $config = array();
+
+    public function log($text)
+    {
+        $log = new PrestaShopLogger();
+        $log->severity = 1;
+        $log->error_code = null;
+        $log->message = $text;
+        $log->date_add = date('Y-m-d H:i:s');
+        $log->date_upd = date('Y-m-d H:i:s');
+
+        $id_employee = null;
+
+        if (isset(Context::getContext()->employee) && Validate::isLoadedObject(Context::getContext()->employee)) {
+            $id_employee = Context::getContext()->employee->id;
+        }
+        if ($id_employee !== null) {
+            $log->id_employee = (int)$id_employee;
+        }
+
+        $log->add();
+    }
+
+    public function __construct()
+    {
+        $this->config = $this->config();
+        $this->name = 'qentaceecheckoutpage';
+        $this->tab = 'payments_gateways';
+        $this->version = '3.0.0';
+        $this->author = 'QENTA';
+        $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
+        $this->is_eu_compatible = 1;
+
+        $this->currencies = true;
+        $this->currencies_mode = 'checkbox';
+
+        $this->bootstrap = true;
+        parent::__construct();
+
+        $this->displayName = $this->l('QENTA Checkout Page');
+        $this->description = $this->l('QENTA Checkout Page payment module');
+        $this->confirmUninstall = $this->l('Are you sure you want to delete these details?');
+    }
+
+    public function install()
+    {
+        if (!parent::install()
+            || !$this->registerHook('paymentOptions')
+            || !$this->registerHook('paymentReturn')
+            || !$this->registerHook('actionFrontControllerSetMedia')
+            || !$this->installPaymentTypes()
+        ) {
+            return false;
+        }
+
+        foreach ($this->getAllConfigurationParameter() as $parameter) {
+            if (isset($parameter['default'])) {
+                $default = $parameter['default'];
+                if (is_array($default)) {
+                    $default = json_encode($default);
+                }
+                if (!Configuration::updateGlobalValue(
+                    $parameter['name'],
+                    $default
+                )
+                ) {
+                    return false;
+                }
+            }
+        }
+
+        // http://forge.prestashop.com/browse/PSCFV-1712
+        if ($this->registerHook('displayPDFInvoice') === false) {
+            return false;
+        }
+
+        if (!Configuration::get(self::QCP_OS_AWAITING)) {
+            $orderState = new OrderState();
+            $orderState->name = array();
+            foreach (Language::getLanguages() as $language) {
+                if (Tools::strtolower($language['iso_code']) == 'de') {
+                    $orderState->name[$language['id_lang']] = 'Checkout Page Bezahlung ausständig';
+                } else {
+                    $orderState->name[$language['id_lang']] = 'Checkout Page payment awaiting';
+                }
+            }
+            $orderState->send_email = false;
+            $orderState->color = 'lightblue';
+            $orderState->hidden = false;
+            $orderState->delivery = false;
+            $orderState->logable = true;
+            $orderState->invoice = false;
+            if ($orderState->add()) {
+                copy(
+                    dirname(__FILE__) . '/views/img/awaiting_payment.gif',
+                    dirname(__FILE__) . '/../../img/os/' . (int)($orderState->id) . '.gif'
+                );
+            }
+            Configuration::updateValue(self::QCP_OS_AWAITING, (int)($orderState->id));
+        }
+        return true;
+    }
+
+    public function hookActionFrontControllerSetMedia($params)
+    {
+
+        $controllerArray = array('order');
+        if (in_array($this->context->controller->php_self, $controllerArray)) {
+            $this->context->controller->registerStylesheet(
+                'module-' . $this->name . '-style',
+                'modules/' . $this->name . '/views/css/style.css',
+                array(
+                    'media' => 'all',
+                    'priority' => 200,
+                )
+            );
+            $this->context->controller->registerJavascript(
+                'module-' . $this->name . '-script',
+                'modules/' . $this->name . '/views/js/script.js',
+                array(
+                    'media' => 'all',
+                    'priority' => 200,
+                )
+            );
+        }
+    }
+
+    private function installPaymentTypes()
+    {
+        $result = true;
+        foreach ($this->getPaymentTypes() as $paymentType) {
+            $result = $result || !Configuration::updateValue($paymentType, self::QCP_PT_DEFAULT);
+        }
+        return $result;
+    }
+
+    public function uninstall()
+    {
+        foreach ($this->getAllConfigurationParameter() as $parameter) {
+            Configuration::deleteByName($parameter['name']);
+        }
+
+        return parent::uninstall();
+    }
+
+    private function postValidation()
+    {
+        if (Tools::isSubmit('btnSubmit')) {
+            if (!Tools::getValue(self::QCP_CUSTOMER_ID)) {
+                $this->postErrors[] = $this->l('Customer ID is required.');
+            }
+            if (!Tools::getValue(self::QCP_SECRET)) {
+                $this->postErrors[] = $this->l('Secret is required.');
+            }
+            if (!is_numeric(Tools::getValue(self::QCP_MAX_RETRIES))) {
+                $this->postErrors[] = $this->l('Max. retries must be numeric (-1 = no restriction).');
+            }
+            if (Tools::getValue(self::QCP_INVOICE_MIN) && !is_numeric(Tools::getValue(self::QCP_INVOICE_MIN))) {
+                $this->postErrors[] = $this->l('Invoice minimum amount must be numeric (0 or empty = no restriction).');
+            }
+            if (Tools::getValue(self::QCP_INVOICE_MAX) && !is_numeric(Tools::getValue(self::QCP_INVOICE_MAX))) {
+                $this->postErrors[] = $this->l('Invoice maximum amount must be numeric (0 or empty = no restriction).');
+            }
+            if (Tools::getValue(self::QCP_INSTALLMENT_MIN) && !is_numeric(Tools::getValue(self::QCP_INSTALLMENT_MIN))) {
+                $this->postErrors[] = $this->l('Installment minimum amount must be numeric (0 or empty = no restriction).');
+            }
+            if (Tools::getValue(self::QCP_INSTALLMENT_MAX) && !is_numeric(Tools::getValue(self::QCP_INSTALLMENT_MAX))) {
+                $this->postErrors[] = $this->l('Installment maximum amount must be numeric (0 or empty = no restriction).');
+            }
+        }
+    }
+
+    private function postProcess()
+    {
+        if (Tools::isSubmit('btnSubmit')) {
+            foreach ($this->getAllConfigurationParameter() as $parameter) {
+                $parameter = $parameter['name'];
+                if ($parameter == self::QCP_OS_AWAITING) {
+                    continue;
+                }
+                $val = Tools::getValue($parameter);
+
+                if (is_array($val)) {
+                    $val = json_encode($val);
+                }
+                Configuration::updateValue($parameter, $val);
+            }
+        }
+        $this->html .= $this->displayConfirmation($this->l('Settings updated'));
+    }
+
+    public function getContent()
+    {
+        $this->html = '<h2>' . $this->displayName . '</h2>';
+
+        if (Tools::isSubmit('btnSubmit')) {
+            $this->postValidation();
+            if (!count($this->postErrors)) {
+                $this->postProcess();
+            } else {
+                foreach ($this->postErrors as $err) {
+                    $this->html .= $this->displayError($err);
+                }
+            }
+        }
+
+        $this->html .= $this->display(__FILE__, 'infos.tpl');
+        $this->html .= $this->renderForm();
+
+        return $this->html;
+    }
+
+    /**
+     * return available currency iso codes
+     *
+     * @return array
+     */
+    protected function getCurrencies()
+    {
+        $currencies = Currency::getCurrencies();
+        $ret = array();
+        foreach ($currencies as $currency) {
+            $ret[] = array(
+                'key' => $currency['iso_code'],
+                'value' => $currency['name']
+            );
+        }
+
+        return $ret;
+    }
+
+    /**
+     * return available country iso codes
+     *
+     * @return array
+     */
+    protected function getCountries()
+    {
+        $cookie = $this->context->cookie;
+        $countries = Country::getCountries($cookie->id_lang);
+        $ret = array();
+        foreach ($countries as $country) {
+            $ret[] = array(
+                'key' => $country['iso_code'],
+                'value' => $country['name']
+            );
+        }
+
+        return $ret;
+    }
+
+    /**
+     * return available usergroups iso codes
+     *
+     * @return array
+     */
+    protected function getUserGroups()
+    {
+        $cookie = $this->context->cookie;
+        $groups = Group::getGroups($cookie->id_lang);
+        $visitor_group = Configuration::get('PS_UNIDENTIFIED_GROUP');
+        $guest_group = Configuration::get('PS_GUEST_GROUP');
+        $cust_group = Configuration::get('PS_CUSTOMER_GROUP');
+        $ret = array();
+        foreach ($groups as $g) {
+            // exclude standard groups
+            if (in_array(
+                $g['id_group'],
+                array($visitor_group, $guest_group, $cust_group)
+            )) {
+                continue;
+            }
+
+            $ret[] = array('key' => $g['id_group'], 'value' => $g['name']);
+        }
+
+        return $ret;
+    }
+
+    protected function getProvider($which)
+    {
+        $ret = array(
+            array(
+                'key' => 'payolution',
+                'value' => 'payolution'
+            ),
+            array(
+                'key' => 'ratepay',
+                'value' => 'RatePay'
+            )
+        );
+
+        return $ret;
+    }
+
+    private function config()
+    {
+        $radio_type = 'onoff';
+        $radio_options = array(
+            array(
+                'id' => 'active_on',
+                'value' => 1,
+                'label' => $this->l('Enabled')
+            ),
+            array(
+                'id' => 'active_off',
+                'value' => 0,
+                'label' => $this->l('Disabled')
+            )
+        );
+
+        $paymentTypeSwitches = array();
+        foreach ($this->getPaymentTypes() as $paymentType) {
+            $info = $this->getPaymentTypeInfo($paymentType);
+            array_push($paymentTypeSwitches, array(
+                'type' => $radio_type,
+                'label' => $info['title'],
+                'name' => $paymentType,
+                'is_bool' => true,
+                'class' => 't',
+                'values' => $radio_options
+            ));
+        }
+
+        $fields_form_settings = array(
+            'settings' => array(
+                'tab' => $this->l('Settings'),
+                'fields' => array(
+                    array(
+                        'type' => 'select',
+                        'label' => $this->l('Configuration'),
+                        'default' => 'production',
+                        'name' => self::QCP_CONFIGURATION_MODE,
+                        'options' => 'getConfigurationModes'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Customer ID'),
+                        'name' => self::QCP_CUSTOMER_ID,
+                        'default' => 'D200001',
+                        'required' => true,
+                        'class' => 'fixed-width-xl',
+                        'maxchar' => 7,
+                        'desc' => $this->l('Customer number you received from QENTA (customerId, i.e. D2#####).').' <a target="_blank" href="https://guides.qenta.com/request_parameters#customerid">'.$this->l('More information').' <i class="icon-external-link"></i></a>',
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Shop ID'),
+                        'name' => self::QCP_SHOP_ID,
+                        'class' => 'fixed-width-xl',
+                        'maxchar' => 16,
+                        'default' => '',
+                        'desc' => $this->l('Shop identifier in case of more than one shop.').' <a target="_blank" href="https://guides.qenta.com/request_parameters#shopid">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Secret'),
+                        'default' => 'B8AKTPWBRMNBV455FG6M2DANE99WU2',
+                        'name' => self::QCP_SECRET,
+                        'class' => 'fixed-width-xxl',
+                        'required' => true,
+                        'desc' => $this->l('String which you received from QENTA for signing and validating data to prove their authenticity.').' <a target="_blank" href="https://guides.qenta.com/security:start#secret_and_fingerprint">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Text on payment page'),
+                        'name' => self::QCP_DISPLAY_TEXT,
+                        'class' => 'fixed-width-xl',
+                        'required' => false,
+                        'default' => '',
+                        'desc' => $this->l('Text displayed during the payment process, i.e. "Thank you for ordering in xy-shop".').' <a target="_blank" href="https://guides.qenta.com/request_parameters#displaytext">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Max. retries'),
+                        'name' => self::QCP_MAX_RETRIES,
+                        'class' => 'fixed-width-xs',
+                        'default' => '-1',
+                        'required' => false,
+                        'desc' => $this->l('Maximum number of payment attempts regarding a certain order.').' <a target="_blank" href="https://guides.qenta.com/request_parameters#maxretries">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => $this->l('Transaction ID'),
+                        'name' => self::QCP_TRANSACTION_ID,
+                        'default' => 'orderNumber',
+                        'options' => 'getTransactionIdOptions',
+                        'desc' => $this->l('QENTA order number: Unique number defined by QENTA identifying the payment.') . '<br>' . $this->l('Gateway reference number: Reference number defined by the processor or acquirer.')
+                    ),
+                    array(
+                        'type' => $radio_type,
+                        'label' => $this->l('Automated deposit'),
+                        'name' => self::QCP_AUTO_DEPOSIT,
+                        'is_bool' => true,
+                        'default' => 0,
+                        'class' => 't',
+                        'values' => $radio_options,
+                        'desc' => $this->l('Enabling an automated deposit of payments.').' <a target="_blank" href="https://guides.qenta.com/request_parameters#autodeposit">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
+                    ),
+                    array(
+                        'type' => $radio_type,
+                        'label' => $this->l('Forward consumer data'),
+                        'name' => self::QCP_SEND_ADDITIONAL_DATA,
+                        'is_bool' => true,
+                        'class' => 't',
+                        'default' => 1,
+                        'values' => $radio_options,
+                        'desc' => $this->l('Forwarding shipping and billing data about your consumer to the respective financial service provider.')
+                    ),
+                    array(
+                        'type' => $radio_type,
+                        'label' => $this->l('Forward basket data'),
+                        'name' => self::QCP_SEND_BASKET_DATA,
+                        'is_bool' => true,
+                        'class' => 't',
+                        'default' => 0,
+                        'values' => $radio_options,
+                        'desc' => $this->l('Forwarding basket data about your consumer to the respective financial service provider.')
+                    ),
+                    array(
+                        'type' => $radio_type,
+                        'label' => $this->l('Display as iframe'),
+                        'name' => self::QCP_USE_IFRAME,
+                        'default' => 1,
+                        'is_bool' => true,
+                        'class' => 't',
+                        'values' => $radio_options
+                    ),
+                    array(
+                        'name' => self::QCP_PAYOLUTION_TERMS,
+                        'label' => $this->l('payolution terms'),
+                        'type' => 'onoff',
+                        'default' => 0,
+                        'doc' => $this->l('Consumer must accept payolution terms during the checkout process.'),
+                        'docref' => 'https://guides.qenta.com/payment_methods:invoice:payolution'
+                    ),
+                    array(
+                        'name' => self::QCP_PAYOLUTION_MID,
+                        'label' => $this->l('payolution mID'),
+                        'type' => 'text',
+                        'doc' => $this->l('Your payolution merchant ID, non-base64-encoded.')
+                    )
+                )
+            ),
+            'paymentmethods' => array(
+                'tab' => $this->l('Payment methods'),
+                'fields' => $paymentTypeSwitches
+            ),
+            'invoiceoptions' => array(
+                'tab' => $this->l('Invoice', 'wirecardwpcbackend'),
+                'fields' => array(
+                    array(
+                        'name' => self::QCP_INVOICE_PROVIDER,
+                        'label' => $this->l('Invoice provider'),
+                        'type' => 'select',
+                        'group' => 'pt',
+                        'default' => 'payolution',
+                        'required' => true,
+                        'options' => 'getProvider',
+                    ),
+                    array(
+                        'name' => self::QCP_INVOICE_ADDRESS_EQUAL,
+                        'label' => $this->l('Billing/shipping address must be identical'),
+                        'type' => 'onoff',
+                        'default' => 1,
+                        'group' => 'pt'
+                    ),
+                    array(
+                        'name' => self::QCP_INVOICE_BILLING_COUNTRIES,
+                        'label' => $this->l('Allowed billing countries'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'size' => 10,
+                        'default' => array('AT', 'DE', 'CH'),
+                        'options' => 'getCountries',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::QCP_INVOICE_SHIPPING_COUNTRIES,
+                        'label' => $this->l('Allowed shipping countries'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'size' => 10,
+                        'default' => array('AT', 'DE', 'CH'),
+                        'options' => 'getCountries',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::QCP_INVOICE_CURRENCIES,
+                        'label' => $this->l('Accepted currencies'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'default' => array('EUR'),
+                        'options' => 'getCurrencies',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::QCP_INVOICE_MIN,
+                        'label' => $this->l('Minimum amount'),
+                        'type' => 'text',
+                        'group' => 'pt',
+                        'validator' => 'numeric',
+                        'default' => 10,
+                        'cssclass' => 'fixed-width-md',
+                        'suffix' => 'EUR'
+                    ),
+                    array(
+                        'name' => self::QCP_INVOICE_MAX,
+                        'label' => $this->l('Maximum amount'),
+                        'type' => 'text',
+                        'group' => 'pt',
+                        'default' => 3500,
+                        'validator' => 'numeric',
+                        'cssclass' => 'fixed-width-md',
+                        'suffix' => 'EUR'
+                    )
+                )
+            ),
+            'installmentoptions' => array(
+                'tab' => $this->l('Installment'),
+                'fields' => array(
+                    array(
+                        'name' => self::QCP_INSTALLMENT_PROVIDER,
+                        'label' => $this->l('Installment provider'),
+                        'type' => 'select',
+                        'group' => 'pt',
+                        'default' => 'payolution',
+                        'required' => true,
+                        'options' => 'getProvider'
+                    )
+                ,
+                    array(
+                        'name' => self::QCP_INSTALLMENT_ADDRESS_EQUAL,
+                        'label' => $this->l('Billing/shipping address must be identical'),
+                        'type' => 'onoff',
+                        'default' => 1,
+                        'group' => 'pt'
+                    ),
+                    array(
+                        'name' => self::QCP_INSTALLMENT_BILLING_COUNTRIES,
+                        'label' => $this->l('Allowed billing countries'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'size' => 10,
+                        'default' => array('AT', 'DE', 'CH'),
+                        'options' => 'getCountries',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::QCP_INSTALLMENT_SHIPPING_COUNTRIES,
+                        'label' => $this->l('Allowed shipping countries'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'size' => 10,
+                        'default' => array('AT', 'DE', 'CH'),
+                        'options' => 'getCountries',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::QCP_INSTALLMENT_CURRENCIES,
+                        'label' => $this->l('Accepted currencies'),
+                        'type' => 'select',
+                        'multiple' => true,
+                        'default' => array('EUR'),
+                        'options' => 'getCurrencies',
+                        'group' => 'pt',
+                    ),
+                    array(
+                        'name' => self::QCP_INSTALLMENT_MIN,
+                        'label' => $this->l('Minimum amount'),
+                        'type' => 'text',
+                        'group' => 'pt',
+                        'validator' => 'numeric',
+                        'default' => 150,
+                        'cssclass' => 'fixed-width-md',
+                        'suffix' => 'EUR'
+                    ),
+                    array(
+                        'name' => self::QCP_INSTALLMENT_MAX,
+                        'label' => $this->l('Maximum amount'),
+                        'type' => 'text',
+                        'group' => 'pt',
+                        'default' => 3500,
+                        'validator' => 'numeric',
+                        'cssclass' => 'fixed-width-md',
+                        'suffix' => 'EUR'
+                    )
+                )
+            )
+        );
+
+        return $fields_form_settings;
+    }
+
+    private function renderForm()
+    {
+        $radio_type = 'switch';
+
+        $radio_options = array(
+            array(
+                'id' => 'active_on',
+                'value' => 1,
+                'label' => $this->l('Enabled')
+            ),
+            array(
+                'id' => 'active_off',
+                'value' => 0,
+                'label' => $this->l('Disabled')
+            )
+        );
+
+        $input_fields = array();
+        $tabs = array();
+        foreach ($this->config as $groupKey => $group) {
+            $tabs[$groupKey] = $this->l($group['tab']);
+            foreach ($group['fields'] as $f) {
+                $elem = array(
+                    'name' => $f['name'],
+                    'label' => $this->l($f['label']),
+                    'tab' => $groupKey,
+                    'type' => $f['type'],
+                    'required' => isset($f['required']) && $f['required']
+                );
+
+                if (isset($f['cssclass'])) {
+                    $elem['class'] = $f['cssclass'];
+                }
+
+                if (isset($f['doc'])) {
+                    if (is_array($f['doc'])) {
+                        $elem['desc'] = '';
+                        foreach ($f['doc'] as $d) {
+                            if (Tools::strlen($elem['desc'])) {
+                                $elem['desc'] .= '<br/>';
+                            }
+
+                            $elem['desc'] .= $d;
+                        }
+                    } else {
+                        $elem['desc'] = $this->l($f['doc']);
+                    }
+                }
+
+                if (isset($f['docref'])) {
+                    $elem['desc'] = isset($elem['desc']) ? $elem['desc'] . ' ' : '';
+                    $elem['desc'] .= sprintf(
+                        '<a target="_blank" href="%s">%s <i class="icon-external-link"></i></a>',
+                        $f['docref'],
+                        $this->l('More information')
+                    );
+                }
+
+                switch ($f['type']) {
+                    case 'text':
+                        if (!isset($elem['class'])) {
+                            $elem['class'] = 'fixed-width-xl';
+                        }
+
+                        if (isset($f['maxchar'])) {
+                            $elem['maxlength'] = $elem['maxchar'] = $f['maxchar'];
+                        }
+                        break;
+
+                    case 'onoff':
+                        $elem['type'] = $radio_type;
+                        $elem['class'] = 't';
+                        $elem['is_bool'] = true;
+                        $elem['values'] = $radio_options;
+                        break;
+
+                    case 'select':
+                        if (isset($f['multiple'])) {
+                            $elem['multiple'] = $f['multiple'];
+                        }
+
+                        if (isset($f['size'])) {
+                            $elem['size'] = $f['size'];
+                        }
+
+                        if (isset($f['options'])) {
+                            $optfunc = $f['options'];
+                            $options = array();
+                            if (is_array($optfunc)) {
+                                $options = $optfunc;
+                            }
+
+                            if (method_exists($this, $optfunc)) {
+                                $options = $this->$optfunc($f['name']);
+                            }
+
+                            $elem['options'] = array(
+                                'query' => $options,
+                                'id' => 'key',
+                                'name' => 'value'
+                            );
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+
+                $input_fields[] = $elem;
+            }
+        }
+
+        $fields_form_settings = array(
+            'form' => array(
+                'tabs' => $tabs,
+                'legend' => array(
+                    'title' => $this->l('Settings'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => $input_fields,
+                'submit' => array(
+                    'title' => $this->l('Save')
+                )
+            ),
+        );
+
+
+        /** @var HelperFormCore $helper */
+        $helper = new HelperForm();
+        $helper->show_toolbar = false;
+
+        /** @var LanguageCore $lang */
+        $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
+        $helper->default_form_language = $lang->id;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get(
+            'PS_BO_ALLOW_EMPLOYEE_FORM_LANG'
+        ) : 0;
+        $helper->id = (int)Tools::getValue('id_carrier');
+        $helper->identifier = $this->identifier;
+        $helper->submit_action = 'btnSubmit';
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
+            . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+
+        $helper->tpl_vars = array(
+            'fields_value' => $this->getConfigFieldsValues(),
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id,
+            'ajax_configtest_url' => $this->context->link->getAdminLink('AdminModules') . '&configure=' . $this->name
+                . '&tab_module=' . $this->tab . '&module_name=' . $this->name
+        );
+
+        return $helper->generateForm(array($fields_form_settings));
+    }
+
+    private function getTransactionIdOptions()
+    {
+        return array(
+            array('key' => 'orderNumber', 'value' => $this->l('QENTA order number')),
+            array('key' => 'gatewayReferenceNumber', 'value' => $this->l('Gateway reference number'))
+        );
+    }
+
+    public function getConfigFieldsValues()
+    {
+        $values = array();
+        foreach ($this->getAllConfigurationParameter() as $parameter) {
+            $val = Configuration::get($parameter['name']);
+
+            if (isset($parameter['multiple']) && $parameter['multiple']) {
+                if (!is_array($val)) {
+                    $val = Tools::strlen($val) ? (json_decode($val) != null) ? json_decode($val) : $val : array();
+                }
+
+                if (is_array($val)) {
+                    $x = array();
+                    foreach ($val as $v) {
+                        $x[$v] = $v;
+                    }
+                }
+                $values[$parameter['name'] . '[]'] = $val;
+            } else {
+                $values[$parameter['name']] = $val;
+            }
+        }
+        return $values;
+    }
+
+    public function hookPaymentOptions($params)
+    {
+        if (!$this->active) {
+            return false;
+        }
+
+        $customer_id = $params['cookie']->id_customer;
+        $customer = new Customer($customer_id);
+        $age = 0;
+        if (Tools::strlen($customer->birthday) && $customer->birthday != '0000-00-00') {
+            $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
+        }
+        $result = array();
+
+        unset($this->context->cookie->qpayRedirectUrl);
+        $paymentTypes = $this->getEnabledPaymentTypes($params['cart']);
+
+        $logo = function ($payment_type) {
+            return ".." . Media::getMediaPath('/modules/qentaceecheckoutpage/views/img/payment_types/' . Tools::strtolower($payment_type) . '.png');
+        };
+
+        if ($this->context->cookie->wcpConsumerDeviceId) {
+            $consumerDeviceId = $this->context->cookie->wcpConsumerDeviceId;
+        } else {
+            $timestamp = microtime();
+            $customerId = $this->getCustomerId();
+            $consumerDeviceId = md5($customerId . "_" . $timestamp);
+            $this->context->cookie->wcpConsumerDeviceId = $consumerDeviceId;
+            $this->context->cookie->write();
+        }
+        if ((Configuration::get(self::QCP_INVOICE_PROVIDER) == 'ratepay' && (bool)Configuration::get(self::QCP_PT_INVOICE)) ||
+            (Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'ratepay' && (bool)Configuration::get(self::QCP_PT_INSTALLMENT))) {
+            $ratepay = '<script language="JavaScript">var di = {t:"' . $consumerDeviceId . '",v:"WDWL",l:"Checkout"};</script>';
+            $ratepay .= '<script type="text/javascript" src="//d.ratepay.com/' . $consumerDeviceId . '/di.js"></script>';
+            $ratepay .= '<noscript><link rel="stylesheet" type="text/css" href="//d.ratepay.com/di.css?t=' . $consumerDeviceId . '&v=WDWL&l=Checkout"></noscript>';
+            $ratepay .= '<object type="application/x-shockwave-flash" data="//d.ratepay.com/WDWL/c.swf" width="0" height="0"><param name="movie" value="//d.ratepay.com/WDWL/c.swf" /><param name="flashvars" value="t=' . $consumerDeviceId . '&v=WDWL"/><param name="AllowScriptAccess" value="always"/></object>';
+
+            echo $ratepay;
+        }
+
+        foreach ($paymentTypes as $paymentType) {
+            $payment = new PaymentOption();
+
+            $current_method = $paymentType['value'];
+            $payment->setLogo($logo(Tools::strtolower($current_method)))
+                ->setCallToActionText($this->l('Pay using') . ' ' . $this->l($paymentType['title']));
+
+            $action = $this->context->link->getModuleLink(
+                $this->name,
+                'payment',
+                array('paymentType' => $current_method),
+                true
+            );
+            $template = "module:qentaceecheckoutpage/views/templates/hook/methods/" . Tools::strtolower($current_method) . ".tpl";
+            $payment_class = new WirecardCEE_QPay_PaymentType($current_method);
+
+            $consent_message = sprintf(
+                $this->l("I agree that the data which are necessary for the liquidation of invoice payments and which are used to complete the identity and credit check are transmitted to payolution.  My %s can be revoked at any time with future effect."),
+                ((Tools::strlen(Configuration::get(self::QCP_PAYOLUTION_MID)))
+                    ? '<a href="https://payment.payolution.com/payolution-payment/infoport/dataprivacyconsent?mId=' . base64_encode(Configuration::get(self::QCP_PAYOLUTION_MID)) . '" target="_blank">' . $this->l('consent') . '</a>'
+                    : $this->l('consent'))
+            );
+
+            if ($this->context->smarty->templateExists($template)) {
+                $this->context->smarty->assign(
+                    array(
+                        "action" => $action,
+                        'days' => Tools::dateDays(),
+                        'months' => Tools::dateMonths(),
+                        'years' => Tools::dateYears(),
+                        "method" => $current_method,
+                        "financialInstitutions" => $payment_class->getFinancialInstitutions($current_method),
+                        "min_age_message" => $this->l("You have to be 18 years or older to use this payment."),
+                        "show_birthdate" => $age < 18,
+                        "consent_error_message" => $this->l("Please accept the consent terms!"),
+                        "consent_text" => $consent_message,
+                        "submit_text" => $this->l('Pay using') . ' ' . $this->l($paymentType['title']),
+                        "has_consent" => Configuration::get(self::QCP_PAYOLUTION_TERMS)
+                            && (($current_method == WirecardCEE_QPay_PaymentType::INVOICE && Configuration::get(self::QCP_INVOICE_PROVIDER) == 'payolution') || ($current_method === WirecardCEE_QPay_PaymentType::INSTALLMENT && Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'payolution'))
+                    )
+                );
+
+                $payment->setBinary(true);
+                $payment->setForm($this->context->smarty->fetch($template));
+            } else {
+                $payment->setAction($action);
+            }
+
+            $result[] = $payment;
+        }
+
+        return count($result) ? $result : false;
+    }
+
+    public function hookDisplayPaymentReturn($params)
+    {
+        if (!$this->active) {
+            return;
+        }
+
+        $this->setOrder((int)Tools::getValue('psOrderNumber'));
+        unset($this->context->cookie->qpayRedirectUrl);
+
+        if ($this->getOrder()->hasBeenPaid() || Tools::getValue('paymentState') == WirecardCEE_QPay_ReturnFactory::STATE_SUCCESS) {
+            $this->smarty->assign(array(
+                'status' => 'ok'
+            ));
+            return $this->display(__FILE__, 'payment_return.tpl');
+        }
+
+        if (Tools::getValue('paymentState') == WirecardCEE_QPay_ReturnFactory::STATE_PENDING) {
+            $this->smarty->assign(array(
+                'status' => 'ok'
+            ));
+            return $this->display(__FILE__, 'pending.tpl');
+        }
+
+        // rebuild cart
+        $oldCart = new Cart((int)$params["order"]->id_cart);
+        $duplication = $oldCart->duplicate();
+        if (!$duplication || !Validate::isLoadedObject($duplication['cart'])) {
+            $this->errors[] = Tools::displayError('Sorry. We cannot renew your order.');
+        } elseif (!$duplication['success']) {
+            $this->errors[] = Tools::displayError('Some items are no longer available, and we are unable to renew your order.');
+        } else {
+            $this->context->cookie->id_cart = $duplication['cart']->id;
+            $context = $this->context;
+            $context->cart = $duplication['cart'];
+            CartRule::autoAddToCart($context);
+            $this->context->cookie->write();
+
+            if (Configuration::get('PS_ORDER_PROCESS_TYPE')) {
+                Tools::redirect($this->context->link->getPageLink('order-opc', true, $this->getOrder()->id_lang, null));
+            }
+            Tools::redirect($this->context->link->getPageLink('order', true, $this->getOrder()->id_lang, null));
+        }
+    }
+
+    public function hookDisplayPDFInvoice($params)
+    {
+        $invoice = $params['object'];
+
+        $msg = $this->getPaymentMessage($invoice->id_order);
+
+        if (preg_match("/paymentType: *([^;]+);.*gatewayReferenceNumber: *([^;]+)/i", $msg, $matches)) {
+            $paymentType = $matches[1];
+            $gatewayReferenceNumber = $matches[2];
+        } else {
+            return '';
+        }
+
+        $ret = sprintf(
+            $this->l(
+                'Your Paymenttype is %s. Please use this number %s as reference for your bank account transactions.'
+            ),
+            $this->l($paymentType),
+            $gatewayReferenceNumber
+        );
+        return $ret;
+    }
+
+    private function getPaymentMessage($id_order)
+    {
+        return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            'SELECT `message`
+                 FROM `' . _DB_PREFIX_ . 'message`
+             WHERE `id_order` = ' . (int)$id_order . '
+                 AND private = 1
+                 AND message like \'%paymentType%\'
+             ORDER BY `id_message`
+        '
+        );
+    }
+
+    /**
+     * build basket
+     *
+     * @param Cart $cart
+     *
+     * @return WirecardCEE_Stdlib_Basket
+     */
+    public function getBasket(Cart $cart)
+    {
+        $basket = new WirecardCEE_Stdlib_Basket();
+
+        foreach ($cart->getProducts() as $product) {
+            $item = new WirecardCEE_Stdlib_Basket_Item($product['reference']);
+            $item->setUnitGrossAmount(number_format($product['price_wt'], 2, '.', ''))
+                ->setUnitNetAmount(number_format($product['price'], 2, '.', ''))
+                ->setUnitTaxAmount(number_format($product['price_wt'] - $product['price'], 2, '.', ''))
+                ->setUnitTaxRate($product['rate'])
+                ->setDescription(Tools::substr(strip_tags($product['description_short']), 0, 127))
+                ->setName(Tools::substr($product['name'], 0, 127))
+                ->setImageUrl(
+                    $this->context->link->getImageLink($product['link_rewrite'], $product['id_image'])
+                );
+
+            $basket->addItem($item, $product['cart_quantity']);
+        }
+
+        if ($cart->getTotalShippingCost(null, true) > 0) {
+            $item = new WirecardCEE_Stdlib_Basket_Item('shipping');
+            $item->setDescription('Shipping')
+                ->setName('Shipping')
+                ->setUnitGrossAmount($cart->getTotalShippingCost(null, true))
+                ->setUnitNetAmount($cart->getTotalShippingCost(null, false))
+                ->setUnitTaxAmount($item->getUnitGrossAmount() - $item->getUnitNetAmount())
+                ->setUnitTaxRate((($item->getUnitGrossAmount() / $item->getUnitNetAmount()) - 1) * 100);
+
+            $basket->addItem($item);
+        }
+
+        return $basket;
+    }
+
+    public function initiatePayment($paymentType, $additionalData)
+    {
+        if (in_array($paymentType, array(
+            WirecardCEE_QMore_PaymentType::INSTALLMENT,
+            WirecardCEE_QMore_PaymentType::INVOICE
+        ))) {
+            $keys_to_check = array('years','months','days');
+
+            /** @var int $age - age from customer object */
+            $customer = new Customer($this->context->customer->id);
+            $age = 0;
+            if (Tools::strlen($customer->birthday) && $customer->birthday != '0000-00-00') {
+                $age = (new DateTime())->diff(DateTime::createFromFormat("Y-m-d", $customer->birthday))->y;
+            }
+
+            if ($age < 18 && count(array_intersect(array_flip(Tools::getAllValues()), $keys_to_check)) < count($keys_to_check)) {
+                // redirect back because some params are missing
+                Tools::redirect(
+                    $this->context->link->getPageLink('order', true, $this->context->language->id),
+                    array("submitReorder" => true)
+                );
+                die();
+            } else {
+                $birthdate = new DateTime();
+                $birthdate->setDate(Tools::getValue('years'), Tools::getValue('months'), Tools::getValue('days'));
+                /** @var int $age - age from dropdowns in payment form */
+                $age = (new DateTime())->diff($birthdate)->y;
+
+                if ($age < 18) {
+                    $this->context->cookie->wcpMessage = $this->l("You have to be 18 years or older to use this payment.");
+
+                    Tools::redirect(
+                        $this->context->link->getPageLink('order', true, $this->context->language->id),
+                        array("submitReorder" => true)
+                    );
+                    die();
+                }
+
+                $customer->birthday = $birthdate->format('Y-m-d');
+                $customer->save();
+            }
+        }
+
+        if (!$this->context->cookie->qpayRedirectUrl) {
+            if (!$this->context->cookie->id_cart) {
+                $this->context->cookie->wcpMessage = $this->l('Unable to load cart.');
+                Tools::redirect(
+                    $this->context->link->getPageLink('order', true, $this->context->language->id),
+                    array("submitReorder" => true)
+                );
+                die();
+            }
+
+            if (!$this->isPaymentTypeEnabled($paymentType)) {
+                throw new Exception($this->l('Payment method not enabled.'));
+            }
+            $this->setCart($this->context->cookie->id_cart);
+
+            try {
+                $redirectUrl = $this->initiate($paymentType, $additionalData);
+                $this->context->cookie->qpayRedirectUrl = $redirectUrl;
+                $this->context->cookie->write();
+            } catch (Exception $e) {
+                $this->log(__METHOD__ . ':' . $e->getMessage());
+                $this->setOrderState(_PS_OS_ERROR_);
+                throw $e;
+            }
+        } else {
+            $redirectUrl = $this->context->cookie->qpayRedirectUrl;
+        }
+
+        if (Configuration::get(self::QCP_USE_IFRAME)) {
+            Tools::redirect($this->context->link->getModuleLink($this->name, 'paymentIFrame'));
+        } else {
+            Tools::redirect($redirectUrl);
+        }
+    }
+
+    private function initiate($paymentType, $additionalData)
+    {
+        $customer = new Customer($this->context->customer->id);
+        $cart = new Cart($this->context->cookie->id_cart);
+
+
+        $this->validateOrder(
+            $this->getCart()->id,
+            $this->getAwaitingState(),
+            $this->myCart->getOrderTotal(true),
+            $this->displayName,
+            null,
+            array(),
+            null,
+            false,
+            $this->myCart->secure_key
+        );
+
+        $this->updatePaymentInformation($this->getCart()->id, $paymentType);
+        $this->setOrder($this->currentOrder);
+
+        $amount = round($this->getAmount(), 2);
+
+        $init = new WirecardCEE_QPay_FrontendClient($this->getConfigArray());
+        $init->setPluginVersion($this->getPluginVersion())
+            ->setConfirmUrl($this->getConfirmUrl())
+            ->setOrderReference($this->getOrderReference())
+            ->setAmount($amount)
+            ->setCurrency($this->getCurrentCurrency())
+            ->setPaymentType($paymentType)
+            ->setOrderDescription($this->getOrderDescription())
+            ->setSuccessUrl($this->getReturnUrl())
+            ->setPendingUrl($this->getReturnUrl())
+            ->setCancelUrl($this->getReturnUrl())
+            ->setFailureUrl($this->getReturnUrl())
+            ->setServiceUrl($this->getServiceUrl())
+            ->setAutoDeposit($this->getAutoDeposit())
+            ->setCustomerStatement($this->getCustomerStatement())
+            ->createConsumerMerchantCrmId($customer->email);
+
+        $consumerData = new WirecardCEE_Stdlib_ConsumerData();
+        $consumerData->setIpAddress($_SERVER['REMOTE_ADDR']);
+        $consumerData->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+
+        $init->setConsumerData($consumerData);
+
+        if ($this->context->cookie->wcpConsumerDeviceId) {
+            $init->consumerDeviceId = $this->context->cookie->wcpConsumerDeviceId;
+            unset($this->context->cookie->wcpConsumerDeviceId);
+        }
+
+        if (isset($additionalData['financialinstitution'])) {
+            $init->setFinancialInstitution($additionalData['financialinstitution']);
+        }
+        if (Tools::strlen(Configuration::get(self::QCP_DISPLAY_TEXT))) {
+            $init->setDisplayText(Configuration::get(self::QCP_DISPLAY_TEXT));
+        }
+
+        if (Tools::strlen(Configuration::get(self::QCP_MAX_RETRIES))) {
+            $init->setMaxRetries(Configuration::get(self::QCP_MAX_RETRIES));
+        }
+
+
+        if (Configuration::get(self::QCP_SEND_BASKET_DATA)
+            || ($paymentType == WirecardCEE_QPay_PaymentType::INSTALLMENT && Configuration::get(self::QCP_INSTALLMENT_PROVIDER) == 'ratepay')
+            || ($paymentType == WirecardCEE_QPay_PaymentType::INVOICE && (Configuration::get(self::QCP_INVOICE_PROVIDER) == 'ratepay' || Configuration::get(self::QCP_INVOICE_PROVIDER) == 'qenta'))
+        ) {
+            $init->setBasket($this->getBasket($cart));
+        }
+
+        if ($paymentType == WirecardCEE_QPay_PaymentType::INVOICE) {
+            $init->setFinancialInstitution(Configuration::get(self::QCP_INVOICE_PROVIDER));
+        }
+
+        if ($paymentType == WirecardCEE_QPay_PaymentType::INSTALLMENT) {
+            $init->setFinancialInstitution(Configuration::get(self::QCP_INSTALLMENT_PROVIDER));
+        }
+
+        if ($paymentType == WirecardCEE_QPay_PaymentType::MASTERPASS) {
+            $init->setShippingProfile('NO_SHIPPING');
+        }
+        //additionally parameters can be added easily because of the magic method __set
+        $init->psOrderNumber = $this->getOrder()->id;
+
+        if ($this->getSendAdditionalData()
+            || $paymentType == WirecardCEE_QPay_PaymentType::INVOICE
+            || $paymentType == WirecardCEE_QPay_PaymentType::INSTALLMENT
+        ) {
+            $init = $this->setConsumerInformation($init);
+        }
+
+
+        return $init->initiate()->getRedirectUrl();
+    }
+
+    private function setConsumerInformation(WirecardCEE_QPay_FrontendClient $request)
+    {
+        $psBillingAddress = new Address($this->getOrder()->id_address_invoice);
+        $psShippingAddress = new Address($this->getOrder()->id_address_delivery);
+
+        $billingAddress = new WirecardCEE_Stdlib_ConsumerData_Address(WirecardCEE_Stdlib_ConsumerData_Address::TYPE_BILLING);
+        $billingState = new State($psBillingAddress->id_state);
+        $billingCountry = new Country($psBillingAddress->id_country);
+        $billingAddress->setFirstname($psBillingAddress->firstname)
+            ->setLastname($psBillingAddress->lastname)
+            ->setAddress1($psBillingAddress->address1)
+            ->setAddress2($psBillingAddress->address2)
+            ->setCity($psBillingAddress->city)
+            ->setZipCode($psBillingAddress->postcode)
+            ->setCountry($billingCountry->iso_code)
+            ->setPhone($psBillingAddress->phone);
+        if ($billingCountry->iso_code == 'US' || $billingCountry->iso_code == 'CA') {
+            $billingAddress->setState($billingState->iso_code);
+        } else {
+            $billingAddress->setState($billingState->name);
+        }
+
+        $shippingAddress = new WirecardCEE_Stdlib_ConsumerData_Address(WirecardCEE_Stdlib_ConsumerData_Address::TYPE_SHIPPING);
+        $shippingState = new State($psShippingAddress->id_state);
+        $shippingCountry = new Country($psShippingAddress->id_country);
+        $shippingAddress->setFirstname($psShippingAddress->firstname)
+            ->setLastname($psShippingAddress->lastname)
+            ->setAddress1($psShippingAddress->address1)
+            ->setAddress2($psShippingAddress->address2)
+            ->setCity($psShippingAddress->city)
+            ->setZipCode($psShippingAddress->postcode)
+            ->setCountry($shippingCountry->iso_code)
+            ->setPhone($psShippingAddress->phone);
+
+        if ($shippingCountry->iso_code == 'US' || $shippingCountry->iso_code == 'CA') {
+            $shippingAddress->setState($shippingState->iso_code);
+        } else {
+            $shippingAddress->setState($shippingState->name);
+        }
+
+        $consumerData = new WirecardCEE_Stdlib_ConsumerData();
+        $consumerData->addAddressInformation($billingAddress)
+            ->addAddressInformation($shippingAddress)
+            ->setUserAgent($this->getConsumerUserAgent())
+            ->setIpAddress($this->getConsumerIpAddress());
+
+        $customer = new Customer($this->getOrder()->id_customer);
+
+        $consumerData->setBirthDate($this->getValidDate($customer->birthday, "Y-m-d"))
+            ->setEmail($customer->email);
+
+        $request->setConsumerData($consumerData);
+
+        return $request;
+    }
+
+    /*
+     * Returns today's date if $date is invalid
+     */
+    public function getValidDate($date, $format)
+    {
+        if (!empty($date) && strtotime($date) !== false) {
+            if ($this->isValidDateFormat($date)) {
+                return DateTime::createFromFormat($format, $date);
+            }
+        }
+        return new DateTime();
+    }
+
+    /*
+     * Checks if format is Y-m-d
+     */
+    public function isValidDateFormat($date)
+    {
+        if (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $date)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function confirmResponse()
+    {
+        if (!$this->active) {
+            return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString($this->l("Module is not active!"));
+        }
+
+        $response = Tools::file_get_contents('php://input');
+        $this->log(__METHOD__ . ':raw:' . $response);
+
+        try {
+            $return = WirecardCEE_QPay_ReturnFactory::getInstance($response, $this->getSecret());
+            $status = $return->validate();
+
+            switch ($status) {
+                case WirecardCEE_QPay_ReturnFactory::STATE_SUCCESS:
+                    $orderState = _PS_OS_PAYMENT_;
+                    //create message with returned Parameters.
+                    $this->saveReturnedFields($return);
+                    $this->updatePaymentInformation($return->getReturned()['psOrderNumber'], $return->getReturned()['paymentType'], $return->getReturned()[$this->getTransactionId()]);
+                    break;
+                case WirecardCEE_QPay_ReturnFactory::STATE_CANCEL:
+                    $orderState = _PS_OS_CANCELED_;
+                    break;
+                case WirecardCEE_QPay_ReturnFactory::STATE_FAILURE:
+                    $this->saveReturnedFields($return);
+                    $orderState = _PS_OS_ERROR_;
+                    break;
+                case WirecardCEE_QPay_ReturnFactory::STATE_PENDING:
+                    $this->saveReturnedFields($return);
+                    $orderState = $this->getAwaitingState();
+                    break;
+                default:
+                    return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString('Invalid uncaught paymentState. Should not happen.');
+            }
+
+            $this->setOrder($return->getReturned()['psOrderNumber']);
+            $this->setOrderState($orderState);
+        } catch (WirecardCEE_Stdlib_Validate_Exception $e) {
+            $this->log(__METHOD__ . ':' . $e->getMessage());
+            if (isset($response->psOrderNumber)) {
+                $this->setOrder($response->psOrderNumber);
+                $this->setOrderState(_PS_OS_ERROR_);
+            }
+            return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString($e->getMessage());
+        }
+        return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString();
+    }
+
+    private function updatePaymentInformation($orderId, $paymentType, $transactionId = '')
+    {
+        $info = $this->getPaymentTypeInfo('QCP_PT_' . $paymentType);
+
+        $order = new Order($orderId);
+        $aOrderPayments = OrderPayment::getByOrderReference($order->reference);
+        if (!empty($aOrderPayments)) {
+            $aOrderPayments[0]->payment_method = $this->displayName . ' ' . $info['title'];
+            if ($transactionId != '') {
+                $aOrderPayments[0]->transaction_id = $transactionId;
+            }
+            $aOrderPayments[0]->save();
+        }
+    }
+
+    public function breakoutIFrame()
+    {
+        if (!$this->active) {
+            return;
+        }
+
+        $this->smarty->assign('_POST', $_POST);
+        if (!Tools::getIsset('id_cart') || !Tools::getIsset('id_module') || !Tools::getIsset('id_order')) {
+            throw new Exception('Invalid Request. orderId, moduleId, cartId or secureKey not set');
+        }
+
+        $id_order = (int)Tools::getValue('id_order');
+        $params = array(
+            'id_cart' => (int)Tools::getValue('id_cart'),
+            'id_module' => (int)Tools::getValue('id_module'),
+            'id_order' => $id_order,
+            'key' => Tools::getValue('key', null)
+        );
+
+        $this->setOrder($id_order);
+
+        $this->smarty->assign(array(
+            'orderConfirmation' =>
+            $this->context->link->getPageLink(
+                'order-confirmation',
+                true,
+                null,
+                $params
+            ),
+            'this_path' => _THEME_CSS_DIR_
+        ));
+        return $this->display(__FILE__, 'breakout_iframe.tpl');
+    }
+
+    private function saveReturnedFields(WirecardCEE_Stdlib_Return_ReturnAbstract $response)
+    {
+        $msg = new Message();
+        $message = '';
+
+        $response = $response->getReturned();
+
+        foreach ($response as $key => $value) {
+            switch ($key) {
+                case 'psOrderNumber':
+                case 'paymentState':
+                case 'amount':
+                case 'currency':
+                case 'language':
+                case 'responseFingerprint':
+                case 'responseFingerprintOrder':
+                    break;
+                default:
+                    $message .= ';' . $key . ': ' . $value;
+                    break;
+            }
+        }
+
+        if (!Validate::isCleanHtml($message)) {
+            $message = $this->l('Payment process results could not be saved reliably. Please check the payment in the QENTA Payment Center.');
+        }
+
+        $msg->message = trim($message, ';');
+        $msg->id_order = (int)($response['psOrderNumber']);
+        $msg->private = 1;
+        $msg->add();
+    }
+
+    private function setOrderState($state)
+    {
+        //Order::setCurrentState() does not save history. - it's not even used in presta itself.
+        $history = new OrderHistory();
+        $history->id_order = (int) $this->getOrder()->id;
+        $history->changeIdOrderState((int)($state), $history->id_order, true);
+        $history->addWithemail();
+    }
+
+    private function getEnabledPaymentTypes($cart)
+    {
+        $paymentTypes = array();
+        foreach ($this->getPaymentTypes() as $type) {
+            if (!Configuration::get($type) ||
+                ($type == self::QCP_PT_INVOICE && !$this->isInvoiceAllowed($cart)) ||
+                ($type == self::QCP_PT_INSTALLMENT && !$this->isInstallmentAllowed($cart))) {
+                continue;
+            }
+            array_push($paymentTypes, $this->getPaymentTypeInfo($type));
+        }
+        return $paymentTypes;
+    }
+
+    private function isPaymentTypeEnabled($paymentType)
+    {
+        if ($paymentType == WirecardCEE_QPay_PaymentType::SELECT) {
+            return true;
+        } else {
+            return Configuration::get('QCP_PT_' . $paymentType);
+        }
+    }
+
+    private function getAllConfigurationParameter()
+    {
+        $params = array();
+
+        foreach ($this->config as $group) {
+            foreach ($group['fields'] as $f) {
+                $params[] = $f;
+            }
+        }
+        return $params;
+    }
+
+    private function getPaymentTypes()
+    {
+        return array(self::QCP_PT_CCARD, self::QCP_PT_MASTERPASS, self::QCP_PT_CCARD_MOTO, self::QCP_PT_MAESTRO,
+            self::QCP_PT_EPS, self::QCP_PT_IDL, self::QCP_PT_GIROPAY, self::QCP_PT_TATRAPAY,
+            self::QCP_PT_SOFORTUEBERWEISUNG, self::QCP_PT_PBX, self::QCP_PT_QUICK, self::QCP_PT_PAYPAL,
+            self::QCP_PT_EPAY_BG, self::QCP_PT_SEPA_DD, self::QCP_PT_TRUSTPAY, self::QCP_PT_INVOICE,
+            self::QCP_PT_INSTALLMENT, self::QCP_PT_BANCONTACT_MISTERCASH, self::QCP_PT_P24, self::QCP_PT_MONETA,
+            self::QCP_PT_POLI, self::QCP_PT_EKONTO, self::QCP_PT_TRUSTLY, self::QCP_PT_SKRILLWALLET,
+            self::QCP_PT_VOUCHER);
+    }
+
+    private function getPaymentTypeInfo($type)
+    {
+        switch ($type) {
+            case self::QCP_PT_CCARD:
+                return array('title' => $this->l('Credit Card'),
+                    'value' => WirecardCEE_QPay_PaymentType::CCARD);
+            case self::QCP_PT_CCARD_MOTO:
+                return array('title' => $this->l('Credit Card - Mail Order and Telephone Order'),
+                    'value' => WirecardCEE_QPay_PaymentType::CCARD_MOTO);
+            case self::QCP_PT_MAESTRO:
+                return array('title' => $this->l('Maestro SecureCode'),
+                    'value' => WirecardCEE_QPay_PaymentType::MAESTRO);
+            case self::QCP_PT_MASTERPASS:
+                return array('title' => $this->l('Masterpass'),
+                    'value' => WirecardCEE_QPay_PaymentType::MASTERPASS);
+            case self::QCP_PT_EPS:
+                return array('title' => $this->l('eps Online-Überweisung'),
+                    'value' => WirecardCEE_QPay_PaymentType::EPS);
+            case self::QCP_PT_IDL:
+                return array('title' => $this->l('iDEAL'),
+                    'value' => WirecardCEE_QPay_PaymentType::IDL);
+            case self::QCP_PT_GIROPAY:
+                return array('title' => $this->l('giropay'),
+                    'value' => WirecardCEE_QPay_PaymentType::GIROPAY);
+            case self::QCP_PT_TATRAPAY:
+                return array('title' => $this->l('TatraPay'),
+                    'value' => WirecardCEE_QPay_PaymentType::TATRAPAY);
+            case self::QCP_PT_SOFORTUEBERWEISUNG:
+                return array('title' => $this->l('Online bank transfer.'),
+                    'value' => WirecardCEE_QPay_PaymentType::SOFORTUEBERWEISUNG);
+            case self::QCP_PT_PBX:
+                return array('title' => $this->l('paybox'),
+                    'value' => WirecardCEE_QPay_PaymentType::PBX);
+            case self::QCP_PT_PSC:
+                return array('title' => $this->l('paysafecard'),
+                    'value' => WirecardCEE_QPay_PaymentType::PSC);
+            case self::QCP_PT_QUICK:
+                return array('title' => $this->l('@Quick'),
+                    'value' => WirecardCEE_QPay_PaymentType::QUICK);
+            case self::QCP_PT_PAYPAL:
+                return array('title' => $this->l('PayPal'),
+                    'value' => WirecardCEE_QPay_PaymentType::PAYPAL);
+            case self::QCP_PT_EPAY_BG:
+                return array('title' => $this->l('ePay.bg'),
+                    'value' => WirecardCEE_QPay_PaymentType::EPAYBG);
+            case self::QCP_PT_SEPA_DD:
+                return array('title' => $this->l('SEPA Direct Debit'),
+                    'value' => WirecardCEE_QPay_PaymentType::SEPADD);
+            case self::QCP_PT_TRUSTPAY:
+                return array('title' => $this->l('TrustPay'),
+                    'value' => WirecardCEE_QPay_PaymentType::TRUSTPAY);
+            case self::QCP_PT_INVOICE:
+                return array('title' => $this->l('Invoice'),
+                    'value' => WirecardCEE_QPay_PaymentType::INVOICE);
+            case self::QCP_PT_INSTALLMENT:
+                return array('title' => $this->l('Installment'),
+                    'value' => WirecardCEE_QPay_PaymentType::INSTALLMENT);
+            case self::QCP_PT_BANCONTACT_MISTERCASH:
+                return array('title' => $this->l('Bancontact'),
+                    'value' => WirecardCEE_QPay_PaymentType::BMC);
+            case self::QCP_PT_P24:
+                return array('title' => $this->l('Przelewy24'),
+                    'value' => WirecardCEE_QPay_PaymentType::P24);
+            case self::QCP_PT_MONETA:
+                return array('title' => $this->l('moneta.ru'),
+                    'value' => WirecardCEE_QPay_PaymentType::MONETA);
+            case self::QCP_PT_POLI:
+                return array('title' => $this->l('POLi'),
+                    'value' => WirecardCEE_QPay_PaymentType::POLI);
+            case self::QCP_PT_EKONTO:
+                return array('title' => $this->l('eKonto'),
+                    'value' => WirecardCEE_QPay_PaymentType::EKONTO);
+            case self::QCP_PT_TRUSTLY:
+                return array('title' => $this->l('Trustly'),
+                    'value' => WirecardCEE_QPay_PaymentType::TRUSTLY);
+            case self::QCP_PT_SKRILLWALLET:
+                return array('title' => $this->l('Skrill Digital Wallet'),
+                    'value' => WirecardCEE_QPay_PaymentType::SKRILLWALLET);
+            case self::QCP_PT_VOUCHER:
+                return array('title' => $this->l('My Voucher'),
+                    'value' => WirecardCEE_QPay_PaymentType::VOUCHER);
+            default:
+                return array('title' => $this->l('The consumer may select one of the activated payment methods directly in QENTA Checkout Page.'),
+                    'value' => WirecardCEE_QPay_PaymentType::SELECT);
+        }
+    }
+
+    private function getAwaitingState()
+    {
+        return Configuration::get(self::QCP_OS_AWAITING);
+    }
+
+    private function getCart()
+    {
+        return $this->myCart;
+    }
+
+    private function setCart($cart_id)
+    {
+        $this->myCart = new Cart((int)$cart_id);
+    }
+
+    private function setOrder($order_id)
+    {
+        $this->myOrder = new Order($order_id);
+    }
+
+    private function getOrder()
+    {
+        return $this->myOrder;
+    }
+
+    private function getMultiSelectArray($key)
+    {
+        $val = Configuration::get($key);
+
+        if (!Tools::strlen($val)) {
+            return array();
+        }
+
+        $ret = json_decode($val);
+        if (!is_array($ret)) {
+            return array();
+        }
+        return $ret;
+    }
+
+    private function isInvoiceAllowed(Cart $cart)
+    {
+        $chosen_currencies = $this->getMultiSelectArray(self::QCP_INVOICE_CURRENCIES);
+        $chosen_shipping_countries = $this->getMultiSelectArray(self::QCP_INVOICE_SHIPPING_COUNTRIES);
+        $chosen_billing_countries = $this->getMultiSelectArray(self::QCP_INVOICE_BILLING_COUNTRIES);
+
+        $currency = new Currency($cart->id_currency);
+        if (!in_array($currency->iso_code, $chosen_currencies)) {
+            return false;
+        }
+
+        $billingAddress = new Address($cart->id_address_invoice);
+        $shippingAddress = new Address($cart->id_address_delivery);
+
+        if (!in_array(
+            (new Country($billingAddress->id_country))->iso_code,
+            $chosen_billing_countries
+        )
+        ) {
+            return false;
+        }
+
+        if (!in_array(
+            (new Country($shippingAddress->id_country))->iso_code,
+            $chosen_shipping_countries
+        )
+        ) {
+            return false;
+        }
+
+        $total = $cart->getOrderTotal();
+
+        if ($billingAddress->id != $shippingAddress->id) {
+            $fields = array('country', 'company', 'firstname', 'lastname', 'address1', 'address2', 'postcode', 'city');
+            foreach ($fields as $f) {
+                if ($billingAddress->$f != $shippingAddress->$f) {
+                    return false;
+                }
+            }
+        }
+
+        if ($this->getInvoiceMin() && $this->getInvoiceMin() > $total) {
+            return false;
+        }
+
+        if ($this->getInvoiceMax() && $this->getInvoiceMax() < $total) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isInstallmentAllowed(Cart $cart)
+    {
+        $chosen_currencies = $this->getMultiSelectArray(self::QCP_INSTALLMENT_CURRENCIES);
+        $chosen_shipping_countries = $this->getMultiSelectArray(self::QCP_INSTALLMENT_SHIPPING_COUNTRIES);
+        $chosen_billing_countries = $this->getMultiSelectArray(self::QCP_INSTALLMENT_BILLING_COUNTRIES);
+
+        $currency = new Currency($cart->id_currency);
+        if (!in_array($currency->iso_code, $chosen_currencies)) {
+            return false;
+        }
+
+        $billingAddress = new Address($cart->id_address_invoice);
+        $shippingAddress = new Address($cart->id_address_delivery);
+
+        if (!in_array(
+            (new Country($billingAddress->id_country))->iso_code,
+            $chosen_billing_countries
+        )
+        ) {
+            return false;
+        }
+
+        if (!in_array(
+            (new Country($shippingAddress->id_country))->iso_code,
+            $chosen_shipping_countries
+        )
+        ) {
+            return false;
+        }
+
+        $total = $cart->getOrderTotal();
+
+        if ($billingAddress->id != $shippingAddress->id) {
+            $fields = array('country', 'company', 'firstname', 'lastname', 'address1', 'address2', 'postcode', 'city');
+            foreach ($fields as $f) {
+                if ($billingAddress->$f != $shippingAddress->$f) {
+                    return false;
+                }
+            }
+        }
+
+        if ($this->getInstallmentMin() && $this->getInstallmentMin() > $total) {
+            return false;
+        }
+
+        if ($this->getInstallmentMax() && $this->getInstallmentMax() < $total) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function getConfigurationModes()
+    {
+        return array(
+            array('key' => 'production', 'value' => $this->l('Production')),
+            array('key' => 'demo', 'value' => $this->l('Demo')),
+            array('key' => 'test', 'value' => $this->l('Test')),
+            array('key' => 'test3d', 'value' => $this->l('Test 3D'))
+        );
+    }
+
+    private function getCustomerId()
+    {
+        $customerIdArray = array(
+            'production' => Configuration::get(self::QCP_CUSTOMER_ID),
+            'demo' => self::QCP_CUSTOMER_ID_DEMO,
+            'test' => self::QCP_CUSTOMER_ID_TEST,
+            'test3d' => self::QCP_CUSTOMER_ID_TEST3D
+        );
+
+        return $customerIdArray[Configuration::get(self::QCP_CONFIGURATION_MODE)];
+    }
+
+    private function getShopId()
+    {
+        $shopIdArray = array(
+            'production' => Configuration::get(self::QCP_SHOP_ID),
+            'demo' => self::QCP_SHOP_ID_DEMO,
+            'test' => self::QCP_SHOP_ID_TEST,
+            'test3d' => self::QCP_SHOP_ID_TEST3D
+        );
+
+        return $shopIdArray[Configuration::get(self::QCP_CONFIGURATION_MODE)];
+    }
+
+    private function getSecret()
+    {
+        $secretArray = array(
+            'production' => Configuration::get(self::QCP_SECRET),
+            'demo' => self::QCP_SECRET_DEMO,
+            'test' => self::QCP_SECRET_TEST,
+            'test3d' => self::QCP_SECRET_TEST3D
+        );
+
+        return $secretArray[Configuration::get(self::QCP_CONFIGURATION_MODE)];
+    }
+
+    private function getInvoiceMin()
+    {
+        return Configuration::get(self::QCP_INVOICE_MIN);
+    }
+
+    private function getInvoiceMax()
+    {
+        return Configuration::get(self::QCP_INVOICE_MAX);
+    }
+
+    private function getInstallmentMin()
+    {
+        return Configuration::get(self::QCP_INSTALLMENT_MIN);
+    }
+
+    private function getInstallmentMax()
+    {
+        return Configuration::get(self::QCP_INSTALLMENT_MAX);
+    }
+
+    private function getTransactionId()
+    {
+        return Configuration::get(self::QCP_TRANSACTION_ID);
+    }
+
+    private function getAutoDeposit()
+    {
+        return Configuration::get(self::QCP_AUTO_DEPOSIT);
+    }
+
+    private function getSendAdditionalData()
+    {
+        return Configuration::get(self::QCP_SEND_ADDITIONAL_DATA);
+    }
+
+    private function getDisplayText()
+    {
+        return Configuration::get(self::QCP_DISPLAY_TEXT);
+    }
+
+    private function getServiceUrl()
+    {
+        return $this->context->link->getPageLink('contact', true);
+    }
+
+    private function getImageUrl()
+    {
+        return $this->context->link->getMediaLink(_PS_IMG_ . 'logo.jpg');
+    }
+
+    private function getAmount()
+    {
+        return $this->getOrder()->total_paid_real;
+    }
+
+    private function getCurrentCurrency()
+    {
+        $current_currency = new Currency($this->getOrder()->id_currency);
+        return $current_currency->iso_code;
+    }
+
+    /**
+     * return config data as needed by the client library
+     *
+     * @return array
+     */
+    public function getConfigArray()
+    {
+        $cfg = array('LANGUAGE' => $this->getLanguage());
+        $cfg['CUSTOMER_ID'] = $this->getCustomerId();
+        $cfg['SHOP_ID'] = $this->getShopId();
+        $cfg['SECRET'] = $this->getSecret();
+
+        return $cfg;
+    }
+
+    private function getLanguage()
+    {
+        return Language::getIsoById($this->getOrder()->id_lang);
+    }
+
+    private function getOrderDescription()
+    {
+        $orderDescription = 'CID: ' . $this->getOrder()->id_customer . ' OID: ' . $this->getOrder()->id;
+        return $orderDescription;
+    }
+
+    private function getOrderReference()
+    {
+        $orderReference = str_pad($this->getOrder()->id, 10, '0', STR_PAD_LEFT);
+        return $orderReference;
+    }
+
+    private function getConsumerIpAddress()
+    {
+        if (!method_exists('Tools', 'getRemoteAddr')) {
+            if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) and $_SERVER['HTTP_X_FORWARDED_FOR']) {
+                if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',')) {
+                    $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+                    return $ips[0];
+                } else {
+                    return $_SERVER['HTTP_X_FORWARDED_FOR'];
+                }
+            }
+            return $_SERVER['REMOTE_ADDR'];
+        } else {
+            return Tools::getRemoteAddr();
+        }
+    }
+
+    private function getConsumerUserAgent()
+    {
+        return $_SERVER['HTTP_USER_AGENT'];
+    }
+
+    private function getCustomerStatement()
+    {
+        return sprintf(
+            "%s %s",
+            Configuration::get('PS_SHOP_NAME'),
+            $this->getOrderReference()
+        );
+    }
+
+    private function getDuplicateRequestCheck()
+    {
+        return 'yes';
+    }
+
+    public function getWindowName()
+    {
+        if (Configuration::get(self::QCP_USE_IFRAME)) {
+            return self::WINDOW_NAME;
+        } else {
+            return null;
+        }
+    }
+
+    private function getConfirmUrl()
+    {
+        return $this->context->link->getModuleLink($this->name, 'confirm', array(), true);
+    }
+
+    private function getReturnUrl()
+    {
+        $params = array(
+            'id_cart' => (int)$this->getCart()->id,
+            'id_module' => (int)$this->id,
+            'id_order' => (int)$this->getOrder()->id,
+            'key' => $this->getOrder()->secure_key
+        );
+        if (Configuration::get(self::QCP_USE_IFRAME)) {
+            return $this->context->link->getModuleLink($this->name, 'breakoutIFrame', $params, true);
+        } else {
+            return $this->context->link->getPageLink('order-confirmation', true, $this->getOrder()->id_lang, $params);
+        }
+    }
+
+    private function getPluginVersion()
+    {
+        return WirecardCEE_QPay_FrontendClient::generatePluginVersion(
+            'Prestashop',
+            _PS_VERSION_,
+            $this->name,
+            $this->version
+        );
+    }
+
+    public function getMinorPrestaVersion()
+    {
+        $version = explode('.', _PS_VERSION_);
+        return $version[1];
+    }
+}

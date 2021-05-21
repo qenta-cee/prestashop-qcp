@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+    <name>qentaceecheckoutpage</name>
+    <displayName><![CDATA[Qenta Checkout Page]]></displayName>
+    <version><![CDATA[3.0.0]]></version>
+    <description><![CDATA[Qenta Checkout Page payment module]]></description>
+    <author><![CDATA[Qenta]]></author>
+    <tab><![CDATA[payments_gateways]]></tab>
+	<confirmUninstall><![CDATA[Are you sure you want to delete these details?]]></confirmUninstall>
+    <is_configurable>1</is_configurable>
+    <need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>
