@@ -18,11 +18,7 @@ ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . realpath(dirn
 
 require_once "library/wirecardcee_autoload.php";
 
-/**
- * Class QentaCEECheckoutPage
- *
- * @method string l() l($key)
- */
+
 class QentaCEECheckoutPage extends PaymentModule
 {
     const QCP_CUSTOMER_ID_DEMO = 'D200001';
@@ -126,7 +122,7 @@ class QentaCEECheckoutPage extends PaymentModule
         $this->name = 'qentaceecheckoutpage';
         $this->tab = 'payments_gateways';
         $this->version = '3.0.0';
-        $this->author = 'Qenta';
+        $this->author = 'QENTA';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
 
@@ -136,8 +132,8 @@ class QentaCEECheckoutPage extends PaymentModule
         $this->bootstrap = true;
         parent::__construct();
 
-        $this->displayName = $this->l('Qenta Checkout Page');
-        $this->description = $this->l('Qenta Checkout Page payment module');
+        $this->displayName = $this->l('QENTA Checkout Page');
+        $this->description = $this->l('QENTA Checkout Page payment module');
         $this->confirmUninstall = $this->l('Are you sure you want to delete these details?');
     }
 
@@ -440,7 +436,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'required' => true,
                         'class' => 'fixed-width-xl',
                         'maxchar' => 7,
-                        'desc' => $this->l('Customer number you received from Qenta (customerId, i.e. D2#####).').' <a target="_blank" href="https://guides.qenta.com/request_parameters#customerid">'.$this->l('More information').' <i class="icon-external-link"></i></a>',
+                        'desc' => $this->l('Customer number you received from QENTA (customerId, i.e. D2#####).').' <a target="_blank" href="https://guides.qenta.com/request_parameters#customerid">'.$this->l('More information').' <i class="icon-external-link"></i></a>',
                     ),
                     array(
                         'type' => 'text',
@@ -458,7 +454,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'name' => self::QCP_SECRET,
                         'class' => 'fixed-width-xxl',
                         'required' => true,
-                        'desc' => $this->l('String which you received from Qenta for signing and validating data to prove their authenticity.').' <a target="_blank" href="https://guides.qenta.com/security:start#secret_and_fingerprint">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
+                        'desc' => $this->l('String which you received from QENTA for signing and validating data to prove their authenticity.').' <a target="_blank" href="https://guides.qenta.com/security:start#secret_and_fingerprint">'.$this->l('More information').' <i class="icon-external-link"></i></a>'
                     ),
                     array(
                         'type' => 'text',
@@ -484,7 +480,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'name' => self::QCP_TRANSACTION_ID,
                         'default' => 'orderNumber',
                         'options' => 'getTransactionIdOptions',
-                        'desc' => $this->l('Qenta order number: Unique number defined by Qenta identifying the payment.') . '<br>' . $this->l('Gateway reference number: Reference number defined by the processor or acquirer.')
+                        'desc' => $this->l('QENTA order number: Unique number defined by QENTA identifying the payment.') . '<br>' . $this->l('Gateway reference number: Reference number defined by the processor or acquirer.')
                     ),
                     array(
                         'type' => $radio_type,
@@ -849,7 +845,7 @@ class QentaCEECheckoutPage extends PaymentModule
     private function getTransactionIdOptions()
     {
         return array(
-            array('key' => 'orderNumber', 'value' => $this->l('Qenta order number')),
+            array('key' => 'orderNumber', 'value' => $this->l('QENTA order number')),
             array('key' => 'gatewayReferenceNumber', 'value' => $this->l('Gateway reference number'))
         );
     }
@@ -1469,7 +1465,7 @@ class QentaCEECheckoutPage extends PaymentModule
         }
 
         if (!Validate::isCleanHtml($message)) {
-            $message = $this->l('Payment process results could not be saved reliably. Please check the payment in the Qenta Payment Center.');
+            $message = $this->l('Payment process results could not be saved reliably. Please check the payment in the QENTA Payment Center.');
         }
 
         $msg->message = trim($message, ';');
@@ -1615,7 +1611,7 @@ class QentaCEECheckoutPage extends PaymentModule
                 return array('title' => $this->l('My Voucher'),
                     'value' => WirecardCEE_QPay_PaymentType::VOUCHER);
             default:
-                return array('title' => $this->l('The consumer may select one of the activated payment methods directly in Qenta Checkout Page.'),
+                return array('title' => $this->l('The consumer may select one of the activated payment methods directly in QENTA Checkout Page.'),
                     'value' => WirecardCEE_QPay_PaymentType::SELECT);
         }
     }
