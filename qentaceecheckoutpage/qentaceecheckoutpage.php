@@ -121,7 +121,7 @@ class QentaCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'qentaceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '3.0.0';
+        $this->version = '3.0.1';
         $this->author = 'QENTA';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
@@ -1355,7 +1355,12 @@ class QentaCEECheckoutPage extends PaymentModule
 
         try {
             $return = WirecardCEE_QPay_ReturnFactory::getInstance($response, $this->getSecret());
-            $status = $return->validate();
+
+            if(!$return->validate()) {
+                return WirecardCEE_QPay_ReturnFactory::generateConfirmResponseString('Invalid response.');
+            }
+
+            $status = $return->getPaymentState();
 
             switch ($status) {
                 case WirecardCEE_QPay_ReturnFactory::STATE_SUCCESS:
