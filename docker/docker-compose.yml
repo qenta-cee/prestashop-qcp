@@ -1,0 +1,19 @@
+services:
+  db:
+    build: db
+    ports: 
+      - 3306:3306
+    environment: 
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=prestashop
+  php:
+    build: php
+    ports: 
+      - 8080:80
+      - 8443:443
+    environment: 
+      - MYSQL_HOST=db
+      - PRESTASHOP_VERSION=1.7.7.4
+    links: 
+      - db:db
+    command: "bash /tmp/setup.sh"
