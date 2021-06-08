@@ -1,7 +1,7 @@
 FROM php:7.1-apache
 
 #install curl
-RUN apt-get update && apt install -y curl git vim
+RUN apt-get update && apt-get install -y curl git vim wget
 
 # Install mcrypt
 
@@ -25,7 +25,7 @@ RUN apt-get update \
         && docker-php-ext-enable pdo_mysql
 
 # Install Intl extension
-RUN apt update && apt install -y zlib1g-dev libicu-dev libpng-dev libjpeg-dev libfreetype6-dev g++ && \
+RUN apt-get update && apt-get install -y zlib1g-dev libicu-dev libpng-dev libjpeg-dev libfreetype6-dev g++ && \
 docker-php-ext-configure intl && \
 docker-php-ext-install -j$(nproc) intl 
 
@@ -43,7 +43,8 @@ COPY php.ini /usr/local/etc/php/php.ini
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer 
 
 # Install node.js and npm
-RUN apt update && apt install -y nodejs npm 
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get -y install nodejs
 
 COPY setup.sh /tmp/setup.sh
 COPY wait_for_service.sh /tmp/wait_for_service.sh
