@@ -1,4 +1,5 @@
 FROM php:7.1-apache
+
 #install curl
 RUN apt-get update && apt install -y curl git vim
 
@@ -29,10 +30,12 @@ docker-php-ext-configure intl && \
 docker-php-ext-install -j$(nproc) intl 
 
 # Install gd
-RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg
-RUN cd /usr/src/php/ext/gd && make
-RUN cp /usr/src/php/ext/gd/modules/gd.so /usr/local/lib/php/extensions/no-debug-non-zts-20190902/gd.so
-RUN docker-php-ext-install -j$(nproc) gd
+RUN apt-get update && apt-get install -y \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd
 
 COPY php.ini /usr/local/etc/php/php.ini
 
@@ -44,5 +47,4 @@ RUN apt update && apt install -y nodejs npm
 
 COPY setup.sh /tmp/setup.sh
 COPY wait_for_service.sh /tmp/wait_for_service.sh
-#COPY defines.inc.php /var/www/html/config/defines.inc.php 
 
