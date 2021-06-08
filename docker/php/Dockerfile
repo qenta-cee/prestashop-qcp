@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:7.1-apache
 #install curl
 RUN apt-get update && apt install -y curl git vim
 
@@ -46,6 +46,3 @@ COPY setup.sh /tmp/setup.sh
 COPY wait_for_service.sh /tmp/wait_for_service.sh
 #COPY defines.inc.php /var/www/html/config/defines.inc.php 
 
-# Configure Apache RootDirectory
-COPY apache/000-default.conf /etc/apache2/sites-available/000-default.conf
-COPY apache/apache2.conf /etc/apache2/apache2.conf
