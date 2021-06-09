@@ -43,9 +43,9 @@ COPY php.ini /usr/local/etc/php/php.ini
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer 
 
 # Install node.js and npm
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_11.x | bash -
 RUN apt-get -y install nodejs
+RUN apt-get install -y build-essential
 
 COPY setup.sh /tmp/setup.sh
 COPY wait_for_service.sh /tmp/wait_for_service.sh
-
