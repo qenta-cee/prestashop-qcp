@@ -22,7 +22,7 @@ mkdir -p log app/logs
 chown -R www-data:www-data *
 chmod -R 755 *
 
-runuser -g www-data -u www-data -- php install-dev/index_cli.php --domain="localhost:8080" --db_server=db --db_password=root --db_name=prestashop --name=ExampleShop --country=de --language=de --firstname=Max --lastname=Musterman --password=admin123 --email=admin@admin.com
+runuser -g www-data -u www-data -- php install-dev/index_cli.php --domain="localhost:${EXPOSED_PORT}" --db_server=db --db_password=root --db_name=prestashop --name=ExampleShop --country=de --language=de --firstname=Max --lastname=Musterman --password=admin123 --email=admin@admin.com
 
 mv install-dev __install-dev
 
