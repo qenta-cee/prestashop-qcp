@@ -1,0 +1,33 @@
+services:
+  presta_db:
+    container_name: presta_db
+    platform: linux/x86_64
+    build: ci/db
+    ports: 
+      - 3306:3306
+    environment: 
+      - MYSQL_ROOT_PASSWORD=${PRESTASHOP_MYSQL_ROOT_PASSWORD:-root}
+      - MYSQL_DATABASE=${PRESTASHOP_MYSQL_DATABASE:-prestashop}
+  presta_php:
+    container_name: presta_php
+    build: ci/php
+    ports: 
+      - ${PRESTASHOP_EXPOSED_PORT:-8012}:80
+      - 8443:443
+    environment:
+      - PRESTASHOP_PERSISTENT=true
+      - PRESTASHOP_EMAIL=${PRESTASHOP_EMAIL:-admin@admin.com}
+      - PRESTASHOP_PASSWORD=${PRESTASHOP_PASSWORD:-qenta123}
+      - PRESTASHOP_COUNTRY=${PRESTASHOP_COUNTRY:-de}
+      - PRESTASHOP_LANGUAGE=${PRESTASHOP_LANGUAGE:-de}
+      - PRESTASHOP_NAME=${PRESTASHOP_NAME:-QENTA Example Shop}
+      - PRESTASHOP_MYSQL_HOST=${PRESTASHOP_MYSQL_HOST:-presta_db}
+      - PRESTASHOP_VERSION=${PRESTASHOP_VERSION:-1.7.7.5}
+      - PRESTASHOP_EXPOSED_PORT=${PRESTASHOP_EXPOSED_PORT:-8012}
+      - PRESTASHOP_NGROK_TOKEN=${PRESTASHOP_NGROK_TOKEN}
+      - PRESTASHOP_MYSQL_ROOT_PASSWORD=${PRESTASHOP_MYSQL_ROOT_PASSWORD:-root}
+      - PRESTASHOP_MYSQL_DATABASE=${PRESTASHOP_MYSQL_DATABASE:-prestashop}
+    volumes:
+      - ./:/workspace
+      - ./data:/var/www/html
+    command: "bash /workspace/ci/php/setup.sh"

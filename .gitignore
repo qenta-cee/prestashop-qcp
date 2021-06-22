@@ -2,3 +2,6 @@
 .DS_Store
 docker/.devcontainer/devcontainer.json
 qentaceecheckoutpage.zip
+node_modules/
+data/
+.env
