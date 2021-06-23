@@ -49,4 +49,3 @@ RUN apt-get -y install nodejs
 RUN apt-get install -y build-essential
 
 COPY setup.sh /tmp/setup.sh
-COPY wait_for_service.sh /tmp/wait_for_service.sh

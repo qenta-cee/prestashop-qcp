@@ -5,8 +5,9 @@
 # BUILD assets in background
 # SETUP PrestaShop
 # SET permissions
+# INSTALL module
 
-set -e
+#set -xe
 
 function start_services() {
   # Run webserver
@@ -18,9 +19,13 @@ function start_services() {
   cd /workspace
   npm install
 
-  # Run NGROK
-  echo "Starting NGROK"
-  PRESTASHOP_NGROK_HOST=$(bash /workspace/ci/lib/ngrok.sh ${PRESTASHOP_NGROK_TOKEN})
+  if [[ -n ${PRESTASHOP_NGROK_HOST} ]]; then
+    echo "NGROK Hostname passed as ENV"
+  else
+    # Run NGROK
+    echo "Starting NGROK"
+    PRESTASHOP_NGROK_HOST=$(timeout 20 bash /workspace/ci/lib/ngrok.sh ${PRESTASHOP_NGROK_TOKEN})
+  fi
 
   if [[ -z ${PRESTASHOP_NGROK_HOST} ]]; then
     echo "WARNING: PRESTASHOP_NGROK_HOST could not be determined" >&2
@@ -28,20 +33,26 @@ function start_services() {
   else
     PRESTASHOP_URL="https://${PRESTASHOP_NGROK_HOST}/"
   fi
+}
 
-  # Wait for db connectivity
-  bash /workspace/ci/php/wait_for_service.sh ${PRESTASHOP_MYSQL_HOST} 3306
+function install_plugin() {
+  echo "Installing plugin ${1}"
+  cp -r /workspace/${1} /var/www/html/modules
+  chown -R www-data:www-data /var/www/html/modules
+  cd /var/www/html/
+  runuser -g www-data -u www-data -- php bin/console prestashop:module install ${1}
 }
 
 function install_shop() {
   if [[ -n $(ls /var/www/html) ]] && [[ ${PRESTASHOP_PERSISTENT} == 'true' ]]; then
-    echo "WARNING: Skipping shop installation. Persistent data found in ./data:/var/www/html"
+    echo "WARNING: Skipping shop installation. PRESTASHOP_PERSISTENT set to true and data found in ./data:/var/www/html"
     return
   fi
   
   # if persistent set to false, remove old data
+  echo "Removing old content"
+  rm -rf /var/www/html/{..?*,.[!.]*,*}
   chown -R www-data:www-data /var/www/html
-  chmod -R 755 /var/www/html
   cd /var/www/html
 
   git clone --depth 1 --branch ${PRESTASHOP_VERSION} https://github.com/PrestaShop/PrestaShop.git .
@@ -54,16 +65,25 @@ function install_shop() {
   {
     npm install
     ./tools/assets/build.sh
+    echo "Done building PrestaShop assets"
   } &> /dev/null &
+
+  install_plugin qentaceecheckoutpage
 }
 
 start_services
 install_shop
 
-echo "############# SHOP URL #############"
-echo "${PRESTASHOP_URL}"
+echo
+echo "############### SHOP URL ###############"
+echo "Shop URL: ${PRESTASHOP_URL}"
+echo "Admin URL: ${PRESTASHOP_URL}admin-dev/"
+echo
 echo "Admin User: ${PRESTASHOP_EMAIL}"
 echo "Admin Password: ${PRESTASHOP_PASSWORD}"
-echo "####################################"
+echo
+echo "Consumer User: pub@prestashop.com"
+echo "Consumer Password: 123456789"
+echo "########################################"
 
 tail -f /dev/stdout
