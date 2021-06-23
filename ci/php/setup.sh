@@ -58,8 +58,9 @@ function install_shop() {
   git clone --depth 1 --branch ${PRESTASHOP_VERSION} https://github.com/PrestaShop/PrestaShop.git .
   composer install
   mkdir -p log app/logs
-  runuser -g www-data -u www-data -- php install-dev/index_cli.php --domain="${PRESTASHOP_NGROK_HOST}" --db_server=${PRESTASHOP_MYSQL_HOST} --db_password=${PRESTASHOP_MYSQL_ROOT_PASSWORD} --db_name=${PRESTASHOP_MYSQL_DATABASE} --name=${PRESTASHOP_NAME} --country=${PRESTASHOP_COUNTRY} --language=${PRESTASHOP_LANGUAGE} --firstname=Max --lastname=Qentaman --password=${PRESTASHOP_PASSWORD} --email=${PRESTASHOP_EMAIL}
+  runuser -g www-data -u www-data -- php install-dev/index_cli.php --enable_ssl=${PRESTASHOP_ENABLE_SSL} --domain="${PRESTASHOP_NGROK_HOST}" --db_server=${PRESTASHOP_MYSQL_HOST} --db_password=${PRESTASHOP_MYSQL_ROOT_PASSWORD} --db_name=${PRESTASHOP_MYSQL_DATABASE} --name=${PRESTASHOP_NAME} --country=${PRESTASHOP_COUNTRY} --language=${PRESTASHOP_LANGUAGE} --firstname=Max --lastname=Qentaman --password=${PRESTASHOP_PASSWORD} --email=${PRESTASHOP_EMAIL}
   mv install-dev __install-dev
+  mv admin-dev _admin
 
   echo "Building PrestaShop assets in the background"
   {
