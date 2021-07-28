@@ -140,8 +140,8 @@ class QentaCEECheckoutPage extends PaymentModule
     public function install()
     {
         if (!parent::install()
+            || !$this->registerHook('displayPaymentReturn')
             || !$this->registerHook('paymentOptions')
-            || !$this->registerHook('paymentReturn')
             || !$this->registerHook('actionFrontControllerSetMedia')
             || !$this->installPaymentTypes()
         ) {
