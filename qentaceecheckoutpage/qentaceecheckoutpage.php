@@ -121,7 +121,7 @@ class QentaCEECheckoutPage extends PaymentModule
         $this->config = $this->config();
         $this->name = 'qentaceecheckoutpage';
         $this->tab = 'payments_gateways';
-        $this->version = '3.0.1';
+        $this->version = '3.0.2';
         $this->author = 'QENTA';
         $this->controllers = array('breakoutIFrame', 'confirm', 'payment', 'paymentIFrame');
         $this->is_eu_compatible = 1;
