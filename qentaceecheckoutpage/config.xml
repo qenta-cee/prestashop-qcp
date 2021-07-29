@@ -2,7 +2,7 @@
 <module>
     <name>qentaceecheckoutpage</name>
     <displayName><![CDATA[Qenta Checkout Page]]></displayName>
-    <version><![CDATA[3.0.0]]></version>
+    <version><![CDATA[3.0.2]]></version>
     <description><![CDATA[Qenta Checkout Page payment module]]></description>
     <author><![CDATA[Qenta]]></author>
     <tab><![CDATA[payments_gateways]]></tab>
