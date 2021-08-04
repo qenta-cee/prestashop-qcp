@@ -516,7 +516,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'type' => $radio_type,
                         'label' => $this->l('Display as iframe'),
                         'name' => self::QCP_USE_IFRAME,
-                        'default' => 1,
+                        'default' => 0,
                         'is_bool' => true,
                         'class' => 't',
                         'values' => $radio_options
