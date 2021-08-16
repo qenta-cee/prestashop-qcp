@@ -516,7 +516,7 @@ class QentaCEECheckoutPage extends PaymentModule
                         'type' => $radio_type,
                         'label' => $this->l('Display as iframe'),
                         'name' => self::QCP_USE_IFRAME,
-                        'default' => 1,
+                        'default' => 0,
                         'is_bool' => true,
                         'class' => 't',
                         'values' => $radio_options
@@ -1901,6 +1901,11 @@ class QentaCEECheckoutPage extends PaymentModule
     private function getOrderReference()
     {
         $orderReference = str_pad($this->getOrder()->id, 10, '0', STR_PAD_LEFT);
+
+        if(Configuration::get(self::QCP_CONFIGURATION_MODE) === 'test' || Configuration::get(self::QCP_CONFIGURATION_MODE) === 'test3d') {
+            $orderReference = md5(str_pad($this->getOrder()->id, microtime(), '0', STR_PAD_LEFT));
+        }
+
         return $orderReference;
     }
 
